@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, Button, Alert, Image, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { login } from '../authService';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     try {
       await login(email, password);
+      await AsyncStorage.setItem('userEmail', email);
       router.replace('../homepage/home');
     } catch (err) {
       Alert.alert('Login failed', err.message);
