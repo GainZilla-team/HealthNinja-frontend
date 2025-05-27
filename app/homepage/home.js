@@ -27,12 +27,12 @@ export default function HomeScreen() {
       </Text>
 
       <View style={styles.content}>
-        <Image source={require('../assets/images/HealthNinja_logo.png')} style={styles.logo} />
+        <Image source={require('../../assets/images/HealthNinja_logo.png')} style={styles.logo} />
         <Text style={styles.message}>No more juggling apps. Just results.</Text>
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/community')}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('../community/CommunityScreen')}>
           <Ionicons name="people" size={24} color="#333" />
           <Text style={styles.iconLabel}>Community</Text>
         </TouchableOpacity>

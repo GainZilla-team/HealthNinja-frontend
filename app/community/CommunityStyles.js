@@ -1,9 +1,17 @@
 import { StyleSheet } from 'react-native';
+import { PollingWatchKind } from 'typescript';
 
 export default StyleSheet.create({
   container: {
+    flex: 1,
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFC0CB',
+  },
+  button: {
+    marginTop: 25,
+  },
+  content: {
+    marginTop: 40,
   },
   title: {
     fontSize: 24,
@@ -14,7 +22,7 @@ export default StyleSheet.create({
     marginBottom: 16,
   },
   input: {
-    borderColor: '#ccc',
+    borderColor: 'grey',
     borderWidth: 1,
     padding: 10,
     marginBottom: 8,
@@ -38,6 +46,6 @@ export default StyleSheet.create({
   },
   comment: {
     fontSize: 12,
-    color: '#333',
+    color: 'grey',
   },
 });
