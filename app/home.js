@@ -32,11 +32,11 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/community')}>
           <Ionicons name="people" size={24} color="#333" />
           <Text style={styles.iconLabel}>Community</Text>
         </TouchableOpacity>
-
+        
         <TouchableOpacity style={styles.iconButton}>
           <MaterialIcons name="fitness-center" size={24} color="#333" />
           <Text style={styles.iconLabel}>Workouts</Text>
