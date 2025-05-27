@@ -16,7 +16,7 @@ export default function HomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: 'pink', justifyContent: 'center', alignItems: 'center' }}>
             <Image source={require('../assets/images/logo.png')} style={{ width: 100, height: 100, marginBottom: 20 }} />
-      {profile ? <Text>Welcome, {profile.name}</Text> : <Text>Loading...</Text>}
+            {profile ? <Text>Welcome, {profile.email}</Text> : <Text>Loading...</Text>}
       <Button
         title="Logout"
         onPress={async () => {
