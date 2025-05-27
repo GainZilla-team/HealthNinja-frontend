@@ -1,12 +1,30 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, TouchableOpacity, Button } from 'react-native';
 import { FontAwesome5, MaterialIcons, Ionicons } from '@expo/vector-icons';
-import styles from '../styles/homeStyles';
+import { getProfile, logout } from '../authService';
+import { useRouter } from 'expo-router';
+import styles from '.homeStyles'; 
 
-const HomeScreen = () => {
+export default function HomeScreen() {
+  const [profile, setProfile] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    getProfile()
+      .then(setProfile)
+      .catch(() => router.replace('/login'));
+  }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace('/login');
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Welcome to HealthNinja</Text>
+      <Text style={styles.header}>
+        Welcome to HealthNinja{profile?.email ? `, ${profile.email}` : ''}
+      </Text>
 
       <View style={styles.content}>
         <Image source={require('../assets/HealthNinja_logo.png')} style={styles.logo} />
@@ -29,8 +47,8 @@ const HomeScreen = () => {
           <Text style={styles.iconLabel}>Nutrition</Text>
         </TouchableOpacity>
       </View>
+
+      <Button title="Logout" onPress={handleLogout} />
     </View>
   );
-};
-
-export default HomeScreen;
+}
