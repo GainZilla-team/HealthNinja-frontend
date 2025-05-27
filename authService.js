@@ -1,58 +1,25 @@
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
-import { Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = 'http://172.20.10.3:3000';
+const BASE_URL = "https://auth-backend-ziu3.onrender.com/api";
 
-export async function login(email, password) {
-    if (!email || !password) {
-    Alert.alert('Missing Fields', 'Please enter both email and password.');
-    return;
-  }
-  try {
-    const res = await axios.post(`${API_BASE_URL}/login`, { email, password });
-    const token = res.data.token;
-    await SecureStore.setItemAsync('jwt', token);
-    return token;
-  } catch (error) {
-    if (error.response) {
-      // Server responded with a status code outside 2xx
-      throw new Error(error.response.data?.error || 'Server error');
-    } else if (error.request) {
-      // Request was made but no response
-      throw new Error('No response from server. Check your connection or server status.');
-    } else {
-      // Something else
-      throw new Error(error.message || 'Unknown error occurred');
-    }
-  }
-}
-
-
-export async function logout() {
-  await SecureStore.deleteItemAsync('jwt');
-}
-
-export async function getToken() {
-  return await SecureStore.getItemAsync('jwt');
-}
-
-export async function getProfile() {
-  const token = await getToken();
-  const res = await axios.get(`${API_BASE_URL}/profile`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+export const register = async (email, password) => {
+  const res = await axios.post(`${BASE_URL}/signup`, { email, password });
   return res.data;
-}
+};
 
-export async function register(email, password) {
-    if (!email || !password) {
-    Alert.alert('Missing Fields', 'Please enter both email and password.');
-    return;
-  }
-  const res = await axios.post(`${API_BASE_URL}/register`, { email, password });
-  const token = res.data.token;
-  await SecureStore.setItemAsync('jwt', token);
-  return token;
-}
+export const login = async (email, password) => {
+  const res = await axios.post(`${BASE_URL}/auth/login`, { email, password });
+  await AsyncStorage.setItem('user', JSON.stringify(res.data));
+  return res.data;
+};
 
+export const getProfile = async () => {
+  const user = await AsyncStorage.getItem('user');
+  if (!user) throw new Error('Not logged in');
+  return JSON.parse(user);
+};
+
+export const logout = async () => {
+  await AsyncStorage.removeItem('user');
+};
