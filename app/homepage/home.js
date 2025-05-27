@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, Button } from 'react-native';
 import { FontAwesome5, MaterialIcons, Ionicons } from '@expo/vector-icons';
-import { getProfile, logout } from '../authService';
+import { getProfile, logout } from '../../authService.js';
 import { useRouter } from 'expo-router';
 import styles from './homeStyles.js'; 
 
