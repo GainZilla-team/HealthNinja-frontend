@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = "https://auth-backend-ziu3.onrender.com/api";
+const BASE_URL = "https://auth-backend-ziu3.onrender.com/api/auth";
 
 export const register = async (email, password) => {
   const res = await axios.post(`${BASE_URL}/signup`, { email, password });
