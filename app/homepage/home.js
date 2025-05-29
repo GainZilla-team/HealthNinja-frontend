@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, Button } from 'react-native';
-import { FontAwesome5, MaterialIcons, Ionicons } from '@expo/vector-icons';
-import { getProfile, logout } from '../../authService.js';
+import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import styles from './homeStyles.js'; 
+import { useEffect, useState } from 'react';
+import { Button, Image, Text, TouchableOpacity, View } from 'react-native';
+import { getProfile, logout } from '../../authService.js';
+import styles from './homeStyles.js';
 
 export default function HomeScreen() {
   const [profile, setProfile] = useState(null);
@@ -42,13 +42,14 @@ export default function HomeScreen() {
           <Text style={styles.iconLabel}>Workouts</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('../nutrition/NutritionScreen')}>
           <FontAwesome5 name="apple-alt" size={24} color="#333" />
           <Text style={styles.iconLabel}>Nutrition</Text>
         </TouchableOpacity>
       </View>
 
       <Button title="Logout" onPress={handleLogout} />
+
     </View>
   );
 }
