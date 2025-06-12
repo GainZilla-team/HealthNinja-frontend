@@ -5,7 +5,7 @@ import styles from './CommunityStyles';
 export default function Post({ post }) {
   return (
     <View style={styles.postContainer}>
-      <Text style={styles.postEmail}>{post.email || 'Anonymous'}</Text>
+      <Text style={styles.postEmail}>{post.email || "Anonymous"}</Text>
       <Text style={styles.postContent}>{post.content}</Text>
       
       {post.comments?.length > 0 && (

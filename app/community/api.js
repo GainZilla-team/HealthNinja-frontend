@@ -8,17 +8,19 @@ export const fetchPosts = async () => {
   return res.data;
 };
 
-export const createPost = async (content) => {
-
-  const userEmail = await AsyncStorage.getItem('userEmail');
+export const createPost = async (content, token) => {
+    const response = await fetch('https://auth-backend-ziu3.onrender.com/api/posts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, 
+      },
+      body: JSON.stringify({ content }),
+    });
   
-  if (!userEmail) {
-    throw new Error('No user email found - please log in');
-  }
-
-  const res = await axios.post(`${BASE_URL}/api/posts`, {
-    content,
-    email: userEmail, 
-  });
-  return res.data;
-};
+    if (!response.ok) {
+      throw new Error('Failed to create post');
+    }
+  
+    return await response.json();
+  };

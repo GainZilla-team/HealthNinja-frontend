@@ -20,16 +20,12 @@ export default function CommunityScreen() {
   return (
 
     <View style={styles.container}>
-
-      
-    
       <ScrollView style={styles.container}>
-        
         <View style={styles.content}>
           <Text style={styles.title}>Community Sharing</Text>
           <CreatePostForm onPostCreated={(newPost) => setPosts([newPost, ...posts])} />
           {posts.map((post) => (
-            <Post key={post._id} post={post} />
+            <Post key={post.id} post={post} />
         ))}
         </View>
       </ScrollView>

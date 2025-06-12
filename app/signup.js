@@ -11,7 +11,7 @@ export default function SignupScreen() {
   const handleSignup = async () => {
     try {
       await register(email, password);
-      router.replace('/home');
+      router.replace('../homepage/home');
     } catch (err) {
       Alert.alert('Signup failed', err.response?.data?.error || err.message);
     }

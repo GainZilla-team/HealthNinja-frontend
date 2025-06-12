@@ -5,14 +5,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CreatePostForm({ onPostCreated }) {
   const [content, setContent] = useState('');
-  const [userEmail, setUserEmail] = useState(null);
+  const [email, setEmail] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        const email = await AsyncStorage.getItem('userEmail');
-        setUserEmail(email);
+        const userEmail = await AsyncStorage.getItem('userEmail');
+        setEmail(userEmail);
       } catch (error) {
         console.error('Failed to load user data:', error);
       }
@@ -25,15 +25,11 @@ export default function CreatePostForm({ onPostCreated }) {
       Alert.alert('Error', 'Post content cannot be empty');
       return;
     }
-
-    if (!userEmail) {
-      Alert.alert('Error', 'Please log in to post');
-      return;
-    }
-
+  
     setIsSubmitting(true);
     try {
-      const newPost = await createPost(content);
+      const token = await AsyncStorage.getItem('token');
+      const newPost = await createPost(content, token);
       onPostCreated(newPost);
       setContent('');
     } catch (error) {

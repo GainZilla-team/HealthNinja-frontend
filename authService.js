@@ -4,22 +4,60 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const BASE_URL = "https://auth-backend-ziu3.onrender.com";
 
 export const register = async (email, password) => {
-  const res = await axios.post(`${BASE_URL}/api/auth/signup`, { email, password });
-  return res.data;
+  try {
+    const res = await axios.post(`${BASE_URL}/api/auth/signup`, { email, password });
+    return res.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      throw new Error(error.response.data.message || 'Signup failed');
+    }
+    throw new Error(error.message || 'Signup failed');
+  }
 };
 
 export const login = async (email, password) => {
-  const res = await axios.post(`${BASE_URL}/api/auth/login`, { email, password });
-  await AsyncStorage.setItem('user', JSON.stringify(res.data));
-  return res.data;
+  try {
+    const response = await fetch('https://auth-backend-ziu3.onrender.com/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+
+    // Log the status for debugging
+    console.log('Login response status:', response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Login failed:', errorData);
+      throw new Error(errorData.message || 'Login failed');
+    }
+
+    const data = await response.json();
+
+    console.log('Login response data:', data);
+
+    if (data.token) {
+      await AsyncStorage.setItem('token', data.token);
+      await AsyncStorage.setItem('userEmail', email);
+      return data;
+    } else {
+      throw new Error('No token returned from login');
+    }
+  } catch (err) {
+    console.error('Login error:', err);
+    throw err;
+  }
 };
 
 export const getProfile = async () => {
-  const user = await AsyncStorage.getItem('user');
-  if (!user) throw new Error('Not logged in');
-  return JSON.parse(user);
+  const token = await AsyncStorage.getItem('token');
+  const email = await AsyncStorage.getItem('userEmail');
+
+  if (!token || !email) throw new Error('Not logged in');
+  return { email, token };
 };
 
 export const logout = async () => {
-  await AsyncStorage.removeItem('user');
+  await AsyncStorage.removeItem('token');
+  await AsyncStorage.removeItem('userEmail');
 };
