@@ -17,37 +17,23 @@ export const register = async (email, password) => {
 
 export const login = async (email, password) => {
   try {
-    const response = await fetch('https://auth-backend-ziu3.onrender.com/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+    const res = await axios.post(`${BASE_URL}/api/auth/login`, { email, password });
 
-    // Log the status for debugging
-    console.log('Login response status:', response.status);
+    console.log('Login axios response:', res.data);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Login failed:', errorData);
-      throw new Error(errorData.message || 'Login failed');
-    }
-
-    const data = await response.json();
-
-    console.log('Login response data:', data);
-
-    if (data.token) {
-      await AsyncStorage.setItem('token', data.token);
+    if (res.data.token) {
+      await AsyncStorage.setItem('token', res.data.token);
       await AsyncStorage.setItem('userEmail', email);
-      return data;
+      return res.data;
     } else {
       throw new Error('No token returned from login');
     }
   } catch (err) {
-    console.error('Login error:', err);
-    throw err;
+    console.error('Login error:', err.response?.data || err.message);
+    throw new Error(err.response?.data?.message || 'Login failed');
   }
 };
+
 
 export const getProfile = async () => {
   const token = await AsyncStorage.getItem('token');
