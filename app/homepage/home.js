@@ -37,14 +37,14 @@ export default function HomeScreen() {
           <Text style={styles.iconLabel}>Community</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.iconButton}>
-          <MaterialIcons name="fitness-center" size={24} color="#333" />
-          <Text style={styles.iconLabel}>Workouts</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('../nutrition/NutritionScreen')}>
+         <TouchableOpacity style={styles.iconButton} onPress={() => router.push('../nutrition/NutritionScreen')}>
           <FontAwesome5 name="apple-alt" size={24} color="#333" />
           <Text style={styles.iconLabel}>Nutrition</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('../workout/RunningScreen')}>
+          <MaterialIcons name="fitness-center" size={24} color="#333" />
+          <Text style={styles.iconLabel}>Workouts</Text>
         </TouchableOpacity>
       </View>
 

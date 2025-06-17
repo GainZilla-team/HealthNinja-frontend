@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Button, ScrollView, Text, TextInput, View } from 'react-native';
@@ -14,9 +15,11 @@ export default function NutritionScreen() {
     setError(null);
     setResult(null);
 
+    const apiKey = Constants.expoConfig.extra.apiKey;
+
     fetch(`https://api.api-ninjas.com/v1/nutrition?query=${encodeURIComponent(query)}`, {
       headers: {
-        'X-Api-Key': 'OevZb6IUwgrCKIScIgXLCQ==23OOJsYliUs2zcOj'
+       'Authorization': `Bearer ${apiKey}`
       }
     })
       .then((response) => {
