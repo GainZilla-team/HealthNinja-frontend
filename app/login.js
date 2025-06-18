@@ -1,3 +1,5 @@
+//to do: add Loading 
+
 import React, { useState } from 'react';
 import { View, TextInput, Button, Alert, Image, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { login } from '../authService';

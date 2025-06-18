@@ -27,5 +27,8 @@ const styles = StyleSheet.create({
     marginTop: 15,
     fontWeight: '600',
   },
+  button: {
+    marginTop: 25,
+  },
 });
 export default styles;
