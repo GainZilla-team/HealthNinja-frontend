@@ -2,7 +2,7 @@ import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Button, Image, Text, TouchableOpacity, View } from 'react-native';
-import { getProfile, logout } from '../../authService.js';
+import { getProfile, logout } from '../../api/authService.js';
 import styles from './homeStyles.js';
 
 export default function HomeScreen() {

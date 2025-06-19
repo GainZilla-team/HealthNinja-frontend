@@ -1,5 +1,4 @@
 import { StyleSheet } from 'react-native';
-import { PollingWatchKind } from 'typescript';
 
 export default StyleSheet.create({
   container: {

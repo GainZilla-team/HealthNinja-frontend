@@ -1,7 +1,7 @@
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
-const BASE_URL = "https://auth-backend-ziu3.onrender.com";
+const BASE_URL = "https://backend-8gzc.onrender.com";
 
 export const register = async (email, password) => {
   try {

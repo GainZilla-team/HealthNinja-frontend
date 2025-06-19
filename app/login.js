@@ -1,10 +1,10 @@
 //to do: add Loading 
 
-import React, { useState } from 'react';
-import { View, TextInput, Button, Alert, Image, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
-import { login } from '../authService';
-import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Alert, Button, Image, KeyboardAvoidingView, Platform, StyleSheet, TextInput, View } from 'react-native';
+import { login } from '../api/authService';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');

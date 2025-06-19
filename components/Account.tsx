@@ -1,3 +1,4 @@
+/*
 import { Session } from '@supabase/supabase-js'
 import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
@@ -79,7 +80,7 @@ export default function Account({ session }: { session: Session }) {
 
   return (
     <View style={styles.container}>
-      {/* Email */}
+      {/* Email }
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <Text style={styles.label}>Email</Text>
         <TextInput
@@ -89,7 +90,7 @@ export default function Account({ session }: { session: Session }) {
         />
       </View>
 
-      {/* Username */}
+      {/* Username }
       <View style={styles.verticallySpaced}>
         <Text style={styles.label}>Username</Text>
         <TextInput
@@ -102,7 +103,7 @@ export default function Account({ session }: { session: Session }) {
         />
       </View>
 
-      {/* Website */}
+      {/* Website }
       <View style={styles.verticallySpaced}>
         <Text style={styles.label}>Website</Text>
         <TextInput
@@ -115,7 +116,7 @@ export default function Account({ session }: { session: Session }) {
         />
       </View>
 
-      {/* Update Button */}
+      {/* Update Button }
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
@@ -130,7 +131,7 @@ export default function Account({ session }: { session: Session }) {
         </TouchableOpacity>
       </View>
 
-      {/* Sign Out Button */}
+      {/* Sign Out Button }
       <View style={styles.verticallySpaced}>
         <TouchableOpacity style={styles.button} onPress={() => supabase.auth.signOut()}>
           <Text style={styles.buttonText}>Sign Out</Text>
@@ -187,3 +188,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 })
+*/

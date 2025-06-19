@@ -1,19 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Button, ScrollView, Text, View } from 'react-native';
 import { fetchPosts } from './api';
+import styles from './CommunityStyles';
 import CreatePostForm from './CreatePostForm';
 import Post from './post';
-import styles from './CommunityStyles';
-import { Button } from 'react-native';
-import { useRouter } from 'expo-router';
 
 
 export default function CommunityScreen() {
   const [posts, setPosts] = useState([]);
 
-  useEffect(() => {
-    fetchPosts().then(setPosts);
-  }, []);
+  const fetchAndSetPosts = async () => {
+  const postsFromServer = await fetchPosts();
+  setPosts(postsFromServer);
+};
+
+useEffect(() => {
+  fetchAndSetPosts();
+}, []);
 
   const router = useRouter();
 
@@ -23,10 +27,16 @@ export default function CommunityScreen() {
       <ScrollView style={styles.container}>
         <View style={styles.content}>
           <Text style={styles.title}>Community Sharing</Text>
-          <CreatePostForm onPostCreated={(newPost) => setPosts([newPost, ...posts])} />
+          <CreatePostForm onPostCreated={fetchAndSetPosts} />
           {posts.map((post) => (
-            <Post key={post.id} post={post} />
-        ))}
+  <Post
+    key={post._id}
+    post={post}
+    onDelete={(id) => {
+      setPosts((prev) => prev.filter((p) => p._id !== id));
+    }}
+  />
+))}
         </View>
       </ScrollView>
 

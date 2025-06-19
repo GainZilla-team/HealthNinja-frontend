@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, Alert, StyleSheet } from 'react-native';
-import { createPost } from './api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
+import { Alert, Button, StyleSheet, TextInput, View } from 'react-native';
+import { createPost } from './api';
 
 export default function CreatePostForm({ onPostCreated }) {
   const [content, setContent] = useState('');
@@ -25,14 +25,34 @@ export default function CreatePostForm({ onPostCreated }) {
       Alert.alert('Error', 'Post content cannot be empty');
       return;
     }
-  
+
+    console.log('Starting post creation...');
     setIsSubmitting(true);
+
     try {
       const token = await AsyncStorage.getItem('token');
+      console.log('Token:', token ? 'Token found' : 'No token found');
+
+      if (!token) {
+      Alert.alert('Error', 'You must be logged in to post');
+      return;
+    }
+
+      console.log('Calling createPost with content:', content.substring(0, 50) + '...')
       const newPost = await createPost(content, token);
-      onPostCreated(newPost);
+      console.log('Post created successfully:', newPost);
+
+      onPostCreated(); 
       setContent('');
+      Alert.alert('Success', 'Post created successfully!');
+
     } catch (error) {
+      console.error('Post creation failed:', error);
+      console.error('Error details:', {
+      message: error.message,
+      status: error.status,
+      response: error.response
+    });
       Alert.alert('Error', error.message || 'Failed to create post');
     } finally {
       setIsSubmitting(false);
