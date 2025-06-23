@@ -46,6 +46,11 @@ export default function HomeScreen() {
           <MaterialIcons name="fitness-center" size={24} color="#333" />
           <Text style={styles.iconLabel}>Workouts</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('../personalisedschedule/Schedule')}>
+          <Ionicons name="calendar" size={24} color="#333" />
+          <Text style={styles.iconLabel}>Schedule</Text>
+        </TouchableOpacity>
       </View>
 
       <Button title="Logout" onPress={handleLogout} />
