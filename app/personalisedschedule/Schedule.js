@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, Button, ScrollView, ActivityIndicator, TextInput, Alert } from 'react-native';
 import * as Calendar from 'expo-calendar';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, Button, ScrollView, Text, TextInput, View } from 'react-native';
 import styles from './ScheduleStyles';
 
 export default function Schedule() {
