@@ -10,6 +10,7 @@ export default function Schedule() {
   const [workoutPlan, setWorkoutPlan] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [generated, setGenerated] = useState(false); // ✅ NEW STATE
 
   const router = useRouter();
 
@@ -64,37 +65,41 @@ export default function Schedule() {
     console.log('Sending request with:', { calendarEvents, userGoal });
 
     setLoading(true);
+    setGenerated(false); // ✅ RESET BEFORE GENERATION
     setError(null);
     setWorkoutPlan('');
 
     try {
-    const response = await fetch('https://backend-8gzc.onrender.com/api/schedule/plan', {
+      const response = await fetch('https://backend-8gzc.onrender.com/api/schedule/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ calendarEvents, userGoal }),
-    });
+      });
 
-    if (!response.ok) {
-        const errorText = await response.text(); // or response.json() if json error
+      if (!response.ok) {
+        const errorText = await response.text();
         console.error('Response status:', response.status);
         console.error('Response text:', errorText);
         throw new Error('Failed to generate workout plan');
-    }
+      }
 
-    const data = await response.json();
-    setWorkoutPlan(data.plan || 'No workout plan returned.');
+      const data = await response.json();
+      setWorkoutPlan(data.plan || 'No workout plan returned.');
+      setGenerated(true); // ✅ SET TO TRUE AFTER SUCCESS
     } catch (error) {
-    console.error(error);
-    setError('Error generating workout plan. Please try again later.');
+      console.error(error);
+      setError('Error generating workout plan. Please try again later.');
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.heading}>Personalized Workout Generator</Text>
 
-        <Button title="1. Load Calendar Schedule" onPress={getEvents} />
+        <Button title="1. Load Calendar Schedule" onPress={getEvents}/>
 
         {error && <Text style={styles.error}>{error}</Text>}
 
@@ -115,6 +120,7 @@ export default function Schedule() {
         <TextInput
           style={styles.input}
           placeholder="E.g., I want to build muscle and have 30 minutes in the evening."
+          placeholderTextColor="lightgray"
           multiline
           value={userGoal}
           onChangeText={setUserGoal}
@@ -122,7 +128,11 @@ export default function Schedule() {
 
         <Button title="2. Generate Personalized Workout Plan" onPress={generateWorkout} />
 
-        {loading && <ActivityIndicator size="large" style={{ marginTop: 20 }} />}
+        {loading ? (
+          <ActivityIndicator size="large" style={{ marginTop: 20 }} />
+        ) : generated ? (
+          <Text style={{ color: 'green', marginTop: 20, fontWeight: 'bold' }}>Workout Generated!</Text>
+        ) : null}
 
         {workoutPlan ? (
           <>
