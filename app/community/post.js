@@ -1,11 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { Alert, Button, Text, View } from 'react-native';
-import { deletePost } from './api';
+import { Alert, Button, Text, TextInput, View } from 'react-native';
+import { addComment, deletePost } from './api';
 import styles from './CommunityStyles';
 
 export default function Post({ post, onDelete }) {
   const [userEmail, setUserEmail] = useState(null);
+  const [commentText, setCommentText] = useState('');
+  const [comments, setComments] = useState(post.comments || []);
 
   useEffect(() => {
     const loadEmail = async () => {
@@ -26,9 +28,20 @@ export default function Post({ post, onDelete }) {
       await deletePost(post._id, token);
       Alert.alert('Success', 'Post deleted successfully');
       if (onDelete) onDelete(post._id);
-
     } catch (error) {
       Alert.alert('Error', error.message || 'Failed to delete post');
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!commentText.trim()) return;
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const newComment = await addComment(post._id, commentText, token);
+      setComments((prev) => [...prev, newComment]);
+      setCommentText('');
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Failed to add comment');
     }
   };
 
@@ -41,17 +54,29 @@ export default function Post({ post, onDelete }) {
         <Button title="Delete" color="red" onPress={handleDelete} />
       )}
 
-      {post.comments?.length > 0 && (
+      {/* Comments display */}
+      {comments.length > 0 && (
         <View style={styles.commentsContainer}>
           <Text style={styles.commentsTitle}>Comments:</Text>
-          {post.comments.map((comment, index) => (
+          {comments.map((comment, index) => (
             <View key={index} style={styles.commentContainer}>
               <Text style={styles.commentEmail}>{comment.email}:</Text>
-              <Text style={styles.commentText}>{comment.text}</Text>
+              <Text style={styles.commentText}>{comment.content}</Text>
             </View>
           ))}
         </View>
       )}
+
+      {/* Add comment input */}
+      <View style={styles.commentInputContainer}>
+        <TextInput
+          style={styles.commentInput}
+          placeholder="Add a comment..."
+          value={commentText}
+          onChangeText={setCommentText}
+        />
+        <Button title="Comment" onPress={handleAddComment} />
+      </View>
     </View>
   );
 }

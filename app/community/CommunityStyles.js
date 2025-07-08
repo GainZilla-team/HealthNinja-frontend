@@ -47,4 +47,34 @@ export default StyleSheet.create({
     fontSize: 12,
     color: 'grey',
   },
+  commentInputContainer: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  commentInput: {
+    flex: 1,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    padding: 6,
+    borderRadius: 4,
+  },
+  commentsContainer: {
+    marginTop: 10,
+    paddingLeft: 10,
+    borderLeftWidth: 2,
+    borderLeftColor: '#ccc',
+  },
+  commentContainer: {
+    marginBottom: 5,
+  },
+  commentEmail: {
+    fontWeight: 'bold',
+  },
+  commentText: {
+    marginLeft: 5,
+    color:'black',
+  },
+
 });
