@@ -7,8 +7,9 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 20,
     paddingHorizontal: 20,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#FFB6C1',
   },
+
   header: {
     fontSize: 26,
     fontWeight: 'bold',
@@ -18,11 +19,15 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    fontFamily: 'Monaco',
+    fontStyle: ['bold','italic'],
   },
   message: {
     fontSize: 18,
+    fontFamily: 'Monaco',
+    fontStyle: ['bold','italic'],
     textAlign: 'center',
-    color: '#666',
+    color: 'darkslategray',
   },
   footer: {
     flexDirection: 'row',

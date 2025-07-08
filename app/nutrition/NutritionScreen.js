@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Button, ScrollView, Text, TextInput, View } from 'react-native';
 import styles from './NutritionStyles';
+import PrimaryButton from '../../components/ui/PrimaryButton';
 
 export default function NutritionScreen() {
   const [query, setQuery] = useState('');
@@ -55,7 +56,7 @@ export default function NutritionScreen() {
         value={query}
         onChangeText={setQuery}
       />
-      <Button title="Get Nutrition Info" onPress={fetchNutrition} />
+      <PrimaryButton title="Get Nutrition Info" onPress={fetchNutrition} />
 
       {loading && <ActivityIndicator size="large" color="#007AFF" style={{ marginTop: 20 }} />}
       {error && <Text style={styles.error}>{error}</Text>}
@@ -75,7 +76,7 @@ export default function NutritionScreen() {
       )}
     </ScrollView>
     <View style={styles.button}>
-          <Button title="Go Back" onPress={() => router.back()} />
+          <PrimaryButton title="Go Back" onPress={() => router.back()} />
     </View>
   </View>
   );

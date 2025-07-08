@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Button, ScrollView, Text, TextInput, View } from 'react-native';
 import styles from './ScheduleStyles';
+import PrimaryButton from '../../components/ui/PrimaryButton';
 
 export default function Schedule() {
   const [calendarEvents, setCalendarEvents] = useState([]);
@@ -201,7 +202,7 @@ export default function Schedule() {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.heading}>Personalized Workout Generator</Text>
 
-        <Button title="1. Load Calendar Schedule" onPress={getEvents} />
+        <PrimaryButton title="1. Load Calendar Schedule" onPress={getEvents} />
 
         {error && <Text style={styles.error}>{error}</Text>}
 
@@ -228,7 +229,7 @@ export default function Schedule() {
           onChangeText={setUserGoal}
         />
 
-        <Button title="2. Generate Personalized Workout Plan" onPress={generateWorkout} />
+        <PrimaryButton title="2. Generate Personalized Workout Plan" onPress={generateWorkout} />
 
         {loading && <ActivityIndicator size="large" style={{ marginTop: 20 }} />}
 
@@ -248,7 +249,7 @@ export default function Schedule() {
       </ScrollView>
 
       <View style={styles.button}>
-        <Button title="Go Back" onPress={() => router.back()} />
+        <PrimaryButton title="Go Back" onPress={() => router.back()} />
       </View>
     </View>
   );

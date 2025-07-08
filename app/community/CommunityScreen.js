@@ -5,6 +5,7 @@ import { fetchPosts } from './api';
 import styles from './CommunityStyles';
 import CreatePostForm from './CreatePostForm';
 import Post from './post';
+import PrimaryButton from '../../components/ui/PrimaryButton';
 
 
 export default function CommunityScreen() {
@@ -41,7 +42,7 @@ useEffect(() => {
       </ScrollView>
 
       <View style={styles.button}>
-        <Button title="Go Back" onPress={() => router.back()} />
+        <PrimaryButton title="Go Back" onPress={() => router.back()} />
       </View>
 
     </View>
