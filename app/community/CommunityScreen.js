@@ -1,50 +1,261 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Button, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { fetchPosts } from '../../api/postService';
-import styles from './CommunityStyles';
 import CreatePostForm from './CreatePostForm';
 import Post from './post';
-import PrimaryButton from '../../components/ui/PrimaryButton';
-
 
 export default function CommunityScreen() {
   const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const fetchAndSetPosts = async () => {
-  const postsFromServer = await fetchPosts();
-  setPosts(postsFromServer);
-};
+    try {
+      setLoading(true);
+      setError(null);
+      const postsFromServer = await fetchPosts();
+      setPosts(postsFromServer);
+    } catch (err) {
+      setError('Failed to load posts');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-useEffect(() => {
-  fetchAndSetPosts();
-}, []);
+  useEffect(() => {
+    fetchAndSetPosts();
+  }, []);
 
   const router = useRouter();
 
   return (
+    <View style={{ flex: 1, backgroundColor: '#f8fafc' }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        
+        {/* Header */}
+        <View style={{ 
+          backgroundColor: '#3b82f6', 
+          paddingTop: 60, 
+          paddingBottom: 30, 
+          paddingHorizontal: 20,
+          borderBottomLeftRadius: 30,
+          borderBottomRightRadius: 30,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8
+        }}>
+          <Text style={{ 
+            fontSize: 32, 
+            fontWeight: '700', 
+            color: 'white', 
+            textAlign: 'center',
+            marginBottom: 8
+          }}>Community</Text>
+          <Text style={{ 
+            fontSize: 16, 
+            color: 'rgba(255,255,255,0.8)', 
+            textAlign: 'center',
+            fontWeight: '300'
+          }}>Share your fitness journey</Text>
+        </View>
 
-    <View style={styles.container}>
-      <ScrollView style={styles.container}>
-        <View style={styles.content}>
-          <Text style={styles.title}>Community Sharing</Text>
-          <CreatePostForm onPostCreated={fetchAndSetPosts} />
-          {posts.map((post) => (
-  <Post
-    key={post._id}
-    post={post}
-    onDelete={(id) => {
-      setPosts((prev) => prev.filter((p) => p._id !== id));
-    }}
-  />
-))}
+        {/* Content */}
+        <View style={{ padding: 20, marginTop: -15 }}>
+          
+          {/* Create Post Section */}
+          <View style={{
+            backgroundColor: 'white',
+            borderRadius: 20,
+            padding: 20,
+            marginBottom: 20,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.08,
+            shadowRadius: 12,
+            elevation: 3
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+              <View style={{ 
+                width: 40, 
+                height: 40, 
+                borderRadius: 20, 
+                backgroundColor: '#fffbeb', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                marginRight: 12
+              }}>
+                <Text style={{ fontSize: 18 }}>✍️</Text>
+              </View>
+              <Text style={{ fontSize: 20, fontWeight: '600', color: '#1e293b' }}>Create Post</Text>
+            </View>
+            
+            <CreatePostForm onPostCreated={fetchAndSetPosts} />
+          </View>
+
+          {/* Posts Section */}
+          <View style={{
+            backgroundColor: 'white',
+            borderRadius: 20,
+            padding: 20,
+            marginBottom: 20,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.08,
+            shadowRadius: 12,
+            elevation: 3
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+              <View style={{ 
+                width: 40, 
+                height: 40, 
+                borderRadius: 20, 
+                backgroundColor: '#eff6ff', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                marginRight: 12
+              }}>
+                <Text style={{ fontSize: 18 }}>💬</Text>
+              </View>
+              <Text style={{ fontSize: 20, fontWeight: '600', color: '#1e293b' }}>
+                Community Posts ({posts.length})
+              </Text>
+            </View>
+
+            {error && (
+              <View style={{
+                backgroundColor: '#fef2f2',
+                borderRadius: 12,
+                padding: 16,
+                marginBottom: 16,
+                borderLeftWidth: 4,
+                borderLeftColor: '#ef4444'
+              }}>
+                <Text style={{ color: '#dc2626', fontSize: 14, fontWeight: '500' }}>{error}</Text>
+              </View>
+            )}
+
+            {loading ? (
+              <View style={{ padding: 40, alignItems: 'center' }}>
+                <ActivityIndicator color="#ec4899" size="large" />
+                <Text style={{ color: '#64748b', marginTop: 12, fontSize: 16 }}>Loading posts...</Text>
+              </View>
+            ) : posts.length === 0 ? (
+              <View style={{ padding: 40, alignItems: 'center' }}>
+                <Text style={{ fontSize: 48, marginBottom: 16 }}>📝</Text>
+                <Text style={{ 
+                  fontSize: 18, 
+                  fontWeight: '600', 
+                  color: '#1e293b', 
+                  marginBottom: 8,
+                  textAlign: 'center'
+                }}>
+                  No Posts Yet
+                </Text>
+                <Text style={{ 
+                  fontSize: 14, 
+                  color: '#64748b', 
+                  textAlign: 'center',
+                  lineHeight: 20
+                }}>
+                  Be the first to share your fitness journey with the community!
+                </Text>
+              </View>
+            ) : (
+              <ScrollView 
+                style={{ maxHeight: 400 }} 
+                showsVerticalScrollIndicator={false}
+                nestedScrollEnabled={true}
+              >
+                {posts.map((post) => (
+                  <View key={post._id} style={{ marginBottom: 16 }}>
+                    <Post
+                      post={post}
+                      onDelete={(id) => {
+                        setPosts((prev) => prev.filter((p) => p._id !== id));
+                      }}
+                    />
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+
+          {/* Community Stats */}
+          <View style={{
+            backgroundColor: 'white',
+            borderRadius: 20,
+            padding: 20,
+            marginBottom: 20,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.08,
+            shadowRadius: 12,
+            elevation: 3
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+              <View style={{ 
+                width: 40, 
+                height: 40, 
+                borderRadius: 20, 
+                backgroundColor: '#f0fdf4', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                marginRight: 12
+              }}>
+                <Text style={{ fontSize: 18 }}>📊</Text>
+              </View>
+              <Text style={{ fontSize: 20, fontWeight: '600', color: '#1e293b' }}>Community Stats</Text>
+            </View>
+            
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ fontSize: 24, fontWeight: '700', color: '#ec4899' }}>{posts.length}</Text>
+                <Text style={{ fontSize: 12, color: '#64748b' }}>Total Posts</Text>
+              </View>
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ fontSize: 24, fontWeight: '700', color: '#f59e0b' }}>
+                  {posts.filter(p => p.createdAt && new Date(p.createdAt) > new Date(Date.now() - 7*24*60*60*1000)).length}
+                </Text>
+                <Text style={{ fontSize: 12, color: '#64748b' }}>This Week</Text>
+              </View>
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ fontSize: 24, fontWeight: '700', color: '#3b82f6' }}>
+                  {new Set(posts.map(p => p.email)).size}
+                </Text>
+                <Text style={{ fontSize: 12, color: '#64748b' }}>Active Users</Text>
+              </View>
+            </View>
+          </View>
         </View>
       </ScrollView>
 
-      <View style={styles.button}>
-        <PrimaryButton title="Go Back" onPress={() => router.back()} />
+      {/* Bottom Navigation */}
+      <View style={{
+        backgroundColor: 'white',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        paddingBottom: 24,
+        borderTopWidth: 1,
+        borderTopColor: '#f1f5f9'
+      }}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{
+            backgroundColor: '#64748b',
+            paddingVertical: 14,
+            borderRadius: 12,
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'center'
+          }}
+        >
+          <Text style={{ fontSize: 16, marginRight: 8 }}>←</Text>
+          <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>Back to Home</Text>
+        </TouchableOpacity>
       </View>
-
     </View>
   );
 }

@@ -1,12 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-<<<<<<< HEAD
-import { Alert, Button, Text, View } from 'react-native';
-import { deletePost } from '../../api/postService';
-=======
 import { Alert, Button, Text, TextInput, View } from 'react-native';
 import { addComment, deletePost } from '../../api/postService';
->>>>>>> 1891cbf84e2b0a23bac12f9b124f6dcccf4e3de7
 import styles from './CommunityStyles';
 
 export default function Post({ post, onDelete }) {
