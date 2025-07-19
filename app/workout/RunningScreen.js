@@ -24,6 +24,7 @@ export default function RunningScreen() {
   const prevLocRef = useRef(null);
   const routeRef = useRef([]);
   const isMountedRef = useRef(true);
+  const isRunningRef = useRef(false); // Track running state in ref
   const startTimeRef = useRef(null);
   const timerRef = useRef(null);
   const totalPausedTimeRef = useRef(0);
@@ -63,8 +64,17 @@ export default function RunningScreen() {
             // Update current location (for map centering)
             setLocation(newLoc);
             
+            console.log('GPS Update:', {
+              isRunning: isRunningRef.current,
+              latitude: newLoc.latitude,
+              longitude: newLoc.longitude,
+              accuracy: newLoc.accuracy,
+              timestamp: new Date().toLocaleTimeString()
+            });
+            
             // Only add to route if workout is running
-            if (isRunning) {
+            if (isRunningRef.current) {
+              console.log('Workout is running, processing location...');
               // Store all points in ref for accuracy
               routeRef.current = [...routeRef.current, newLoc];
 
@@ -85,10 +95,19 @@ export default function RunningScreen() {
                     longitude: newLoc.longitude 
                   }
                 );
-                setDistance((total) => total + d);
+                console.log('Distance calculated:', d, 'meters');
+                console.log('Previous location:', prevLocRef.current);
+                console.log('Current location:', newLoc);
+                setDistance((total) => {
+                  const newTotal = total + d;
+                  console.log('Total distance updated:', newTotal, 'meters');
+                  return newTotal;
+                });
               }
               
               prevLocRef.current = newLoc;
+            } else {
+              console.log('Workout not running, skipping distance calculation');
             }
             
             setIsLoading(false);
@@ -150,10 +169,14 @@ export default function RunningScreen() {
 
   // Workout control functions
   const startWorkout = () => {
+    console.log('START WORKOUT BUTTON PRESSED');
+    console.log('Current state:', { hasStarted, isRunning });
+    
     if (!hasStarted) {
       // First time starting
       startTimeRef.current = Date.now();
       setHasStarted(true);
+      console.log('First time starting workout');
     } else {
       // Resuming from pause - add the pause duration to total paused time
       if (lastPauseStartRef.current) {
@@ -161,17 +184,22 @@ export default function RunningScreen() {
         totalPausedTimeRef.current += pauseDuration;
         lastPauseStartRef.current = null;
       }
+      console.log('Resuming workout from pause');
     }
     setIsRunning(true);
+    isRunningRef.current = true; // Also update the ref
+    console.log('isRunning set to true');
   };
 
   const pauseWorkout = () => {
     setIsRunning(false);
+    isRunningRef.current = false; // Also update the ref
     lastPauseStartRef.current = Date.now(); // Record when pause started
   };
 
   const finishWorkout = () => {
     setIsRunning(false);
+    isRunningRef.current = false; // Also update the ref
     //add save workout logic
     Alert.alert(
       'Workout Complete!',
@@ -203,7 +231,7 @@ export default function RunningScreen() {
   // Show loading state
   if (isLoading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[styles.container, styles.loadingContainer]}>
         <Text style={styles.text}>Acquiring GPS signal...</Text>
         <Button title="Go Back" onPress={() => router.back()} />
       </View>
@@ -213,7 +241,7 @@ export default function RunningScreen() {
   // Show error state
   if (error) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[styles.container, styles.errorContainer]}>
         <Text style={styles.text}>Error: {error}</Text>
         <Button title="Go Back" onPress={() => router.back()} />
       </View>
@@ -272,103 +300,3 @@ export default function RunningScreen() {
   );
 }
 
-
-
-
-
-/*
-  
- /* const currentPace = duration > 0 ? (duration / 60) / (distance / 1000) : 0; //Calculate pace: min/km
-  const saveRoute = async () => {
-  const routeData = {
-    route,
-    distance,
-    duration,
-    date: new Date().toISOString()
-  };
-  // Save to AsyncStorage or database
-};
-
-
-
-
-  useEffect(() => {
-    let watcher;
-    let prevLoc = null;
-
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Permission denied');
-        return;
-      }
-
-      watcher = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.Highest,
-          timeInterval: 3000,
-          distanceInterval: 1,
-        },
-        (loc) => {
-          const newLoc = loc.coords;
-          setLocation(newLoc);
-          //setRoute((prev) => [...prev, newLoc]);
-          routeRef.current = [...routeRef.current, newLoc];
-          if (routeRef.current.length % 5 === 0) {
-            setRoute([...routeRef.current]);
-          }
-
-          if (prevLoc) {
-            const d = getDistance(
-              { latitude: prevLoc.latitude, longitude: prevLoc.longitude },
-              { latitude: newLoc.latitude, longitude: newLoc.longitude }
-            );
-            setDistance((total) => total + d);
-          }
-
-          prevLoc = newLoc;
-        },
-        (error) => console.log('Location error:', error)
-      );
-    })();
-
-    return () => watcher?.remove();
-  }, []);
-   
-
-  const router = useRouter();
-
-  return (
-    <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        ref={mapRef}
-        showsUserLocation
-        followsUserLocation
-        initialRegion={{
-          latitude: location?.latitude || 1.3521,
-          longitude: location?.longitude || 103.8198,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        }}
-      >
-        <Polyline
-          coordinates={route}
-          strokeColor="blue"
-          strokeWidth={5}
-        />
-      </MapView>
-      <View style={styles.overlay}>
-        <Text style={styles.text}>Distance: {(distance / 1000).toFixed(2)} km</Text>
-      </View>
-          <View style={styles.button}>
-          <Button title="Go Back" onPress={() => router.back()} />
-    </View>
-    </View>
-  );
-}
-
-//add finish button -> reset dist to 0s
-
-
-*/

@@ -183,52 +183,6 @@ export default function CommunityScreen() {
             )}
           </View>
 
-          {/* Community Stats */}
-          <View style={{
-            backgroundColor: 'white',
-            borderRadius: 20,
-            padding: 20,
-            marginBottom: 20,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.08,
-            shadowRadius: 12,
-            elevation: 3
-          }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-              <View style={{ 
-                width: 40, 
-                height: 40, 
-                borderRadius: 20, 
-                backgroundColor: '#f0fdf4', 
-                justifyContent: 'center', 
-                alignItems: 'center',
-                marginRight: 12
-              }}>
-                <Text style={{ fontSize: 18 }}>📊</Text>
-              </View>
-              <Text style={{ fontSize: 20, fontWeight: '600', color: '#1e293b' }}>Community Stats</Text>
-            </View>
-            
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 24, fontWeight: '700', color: '#ec4899' }}>{posts.length}</Text>
-                <Text style={{ fontSize: 12, color: '#64748b' }}>Total Posts</Text>
-              </View>
-              <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 24, fontWeight: '700', color: '#f59e0b' }}>
-                  {posts.filter(p => p.createdAt && new Date(p.createdAt) > new Date(Date.now() - 7*24*60*60*1000)).length}
-                </Text>
-                <Text style={{ fontSize: 12, color: '#64748b' }}>This Week</Text>
-              </View>
-              <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 24, fontWeight: '700', color: '#3b82f6' }}>
-                  {new Set(posts.map(p => p.email)).size}
-                </Text>
-                <Text style={{ fontSize: 12, color: '#64748b' }}>Active Users</Text>
-              </View>
-            </View>
-          </View>
         </View>
       </ScrollView>
 
