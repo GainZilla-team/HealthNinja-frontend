@@ -1,4 +1,4 @@
-/*
+
 import 'react-native-url-polyfill/auto';
 import React from 'react';
 import HomeScreen from '../jwt-auth-app/app/homepage/home';
@@ -6,8 +6,8 @@ import HomeScreen from '../jwt-auth-app/app/homepage/home';
 export default function App() {
   return <HomeScreen />;
 }
-   */
-
+  
+/*
 import { Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { View } from 'react-native'
@@ -34,3 +34,4 @@ export default function App() {
     </View>
   )
 }
+  */

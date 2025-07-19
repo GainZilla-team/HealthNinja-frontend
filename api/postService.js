@@ -1,5 +1,5 @@
-
-const BASE_URL = 'https://backend-8gzc.onrender.com'; 
+import Constants from 'expo-constants';
+const BASE_URL = Constants.expoConfig?.extra?.BASE_URL;
 
 export const fetchPosts = async () => {
   const response = await fetch(`${BASE_URL}/api/posts`);

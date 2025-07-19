@@ -9,8 +9,8 @@ export default {
       eas: {
         projectId: "7d57a2c0-5f3b-45a6-a195-959864c010d3"
       },
-      SUPABASE_URL: process.env.SUPABASE_URL,
-      SUPABASE_KEY: process.env.SUPABASE_KEY,
+      API_KEY: process.env.API_KEY,
+      BASE_URL: process.env.BASE_URL,
     },
     version: "1.0.0",
     orientation: "portrait",

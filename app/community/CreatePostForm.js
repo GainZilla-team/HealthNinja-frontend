@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { Alert, Button, StyleSheet, TextInput, View } from 'react-native';
-import { createPost } from './api';
+import { createPost } from '../../api/postService';
 
 export default function CreatePostForm({ onPostCreated }) {
   const [content, setContent] = useState('');

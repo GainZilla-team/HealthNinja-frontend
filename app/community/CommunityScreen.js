@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Button, ScrollView, Text, View } from 'react-native';
-import { fetchPosts } from './api';
+import { fetchPosts } from '../../api/postService';
 import styles from './CommunityStyles';
 import CreatePostForm from './CreatePostForm';
 import Post from './post';

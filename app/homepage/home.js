@@ -51,6 +51,11 @@ export default function HomeScreen() {
           <Ionicons name="calendar" size={24} color="#333" />
           <Text style={styles.iconLabel}>Schedule</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('../sleep/SleepScreen')}>
+          <Ionicons name="moon" size={24} color="#333" />
+          <Text style={styles.iconLabel}>Sleep</Text>
+        </TouchableOpacity>
       </View>
 
       <Button title="Logout" onPress={handleLogout} />

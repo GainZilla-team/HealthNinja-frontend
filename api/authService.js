@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-const BASE_URL = "https://backend-8gzc.onrender.com";
+import Constants from 'expo-constants';
+const BASE_URL = Constants.expoConfig?.extra?.BASE_URL;
 
 export const register = async (email, password) => {
   try {
