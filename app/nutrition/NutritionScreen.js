@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Button, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import styles from './NutritionStyles';
+import PrimaryButton from '../../components/ui/PrimaryButton';
 
 const BASE_URL = Constants.expoConfig?.extra?.BASE_URL;
 
@@ -135,7 +136,18 @@ export default function NutritionScreen() {
 
   return (
     <View style={styles.container}>
+<<<<<<< HEAD
       <ScrollView contentContainerStyle={styles.container}>
+=======
+    <ScrollView contentContainerStyle={styles.container}>
+      <TextInput
+        style={styles.input}
+        placeholder="Enter food (e.g., 2 eggs and toast)"
+        value={query}
+        onChangeText={setQuery}
+      />
+      <PrimaryButton title="Get Nutrition Info" onPress={fetchNutrition} />
+>>>>>>> 1891cbf84e2b0a23bac12f9b124f6dcccf4e3de7
 
         {/* Search Input */}
         <TextInput
@@ -236,6 +248,7 @@ export default function NutritionScreen() {
             )
           ))}
         </View>
+<<<<<<< HEAD
       );
     })}
   </ScrollView>
@@ -244,6 +257,12 @@ export default function NutritionScreen() {
       <View style={styles.button}>
         <Button title="Go Back" onPress={() => router.back()} />
       </View>
+=======
+      )}
+    </ScrollView>
+    <View style={styles.button}>
+          <PrimaryButton title="Go Back" onPress={() => router.back()} />
+>>>>>>> 1891cbf84e2b0a23bac12f9b124f6dcccf4e3de7
     </View>
   );
 }

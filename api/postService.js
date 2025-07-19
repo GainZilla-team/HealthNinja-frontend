@@ -108,6 +108,24 @@ export const deletePost = async (postId, token) => {
   }
 };
 
+export const addComment = async (postId, commentText, token) => {
+  const response = await fetch(`${BASE_URL}/api/posts/${postId}/comments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ content: commentText }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to add comment: ${errorText}`);
+  }
+
+  return await response.json();
+};
+
 // Add to api.js
 export const testBackend = async () => {
   try {

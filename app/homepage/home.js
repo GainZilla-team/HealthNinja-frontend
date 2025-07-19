@@ -23,7 +23,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>
-        Welcome to HealthNinja{profile?.email ? `, ${profile.email}` : ''}
+        Welcome to HealthNinja{profile?.email ? `, ${profile.email}` : ''}!
       </Text>
 
       <View style={styles.content}>
