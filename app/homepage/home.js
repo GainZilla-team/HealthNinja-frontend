@@ -66,6 +66,7 @@ export default function HomeScreen() {
     }
   };
 
+
   const handleLogout = async () => {
     await logout();
     router.replace('/login');
@@ -233,7 +234,28 @@ export default function HomeScreen() {
               </View>
             )}
           </View>
-
+          
+          {/* View Recent Workouts Button */}
+          <TouchableOpacity
+            onPress={() => router.push('/workout/RecentWorkouts')}
+            style={{
+              backgroundColor: '#fff',
+              borderRadius: 12,
+              paddingVertical: 16,
+              alignItems: 'center',
+              marginBottom: 24,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 8,
+              elevation: 2
+            }}          
+            >
+         <Text style={{ fontSize: 20, color: '#ec4899', fontWeight: '600' }}>
+          View recent workouts
+        </Text>
+        </TouchableOpacity>
+            
           {/* Health Modules Grid */}
           <Text style={{ fontSize: 20, fontWeight: '600', color: '#1e293b', marginBottom: 16 }}>
             Health Modules

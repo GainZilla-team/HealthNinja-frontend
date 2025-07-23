@@ -1,6 +1,6 @@
 // Features: GPS tracking, distance calculation, pace calculatiom, time elapsed, route visualization
-//to do : 
-// add store adn save  workout 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { getDistance } from 'geolib';
@@ -8,6 +8,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Text, View } from 'react-native';
 import MapView, { Polyline } from 'react-native-maps';
 import styles from '../workout/RunningStyles';
+
+const BASE_URL = Constants.expoConfig?.extra?.BASE_URL;
 
 export default function RunningScreen() {
   const [route, setRoute] = useState([]);
@@ -18,6 +20,7 @@ export default function RunningScreen() {
   const [duration, setDuration] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   const mapRef = useRef(null);
   const watcherRef = useRef(null);
@@ -197,16 +200,85 @@ export default function RunningScreen() {
     lastPauseStartRef.current = Date.now(); // Record when pause started
   };
 
+  const saveWorkout = async () => {
+    try {
+      setIsSaving(true);
+      const token = await AsyncStorage.getItem('token');
+      
+      const workoutData = {
+        type: 'running',
+        duration: formatTime(duration), // in MM:SS
+        distance: (distance / 1000).toFixed(2), // in km
+        pace: formatPace(currentPace), // min/km
+        route: routeRef.current, // GPS coordinates array
+        startTime: new Date(startTimeRef.current).toISOString(),
+        endTime: new Date().toISOString(),
+        calories: Math.round((distance / 1000) * 60), // Rough estimate: 60 calories per km
+      };
+
+      console.log('Saving workout:', workoutData);
+
+      const response = await fetch(`${BASE_URL}/api/workouts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(workoutData),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to save workout: ${errorText}`);
+      }
+
+      const savedWorkout = await response.json();
+      console.log('Workout saved successfully:', savedWorkout);
+      
+      Alert.alert(
+        'Success!', 
+        'Your workout has been saved successfully.',
+        [{ text: 'OK', onPress: () => router.back() }]
+      );
+      
+    } catch (error) {
+      console.error('Error saving workout:', error);
+      Alert.alert(
+        'Save Failed',
+        `Failed to save workout: ${error.message}`,
+        [
+          { text: 'Try Again', onPress: saveWorkout },
+          { text: 'Exit Without Saving', onPress: () => router.back() }
+        ]
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const finishWorkout = () => {
     setIsRunning(false);
     isRunningRef.current = false; // Also update the ref
-    //add save workout logic
+    
+    if (distance === 0 || duration === 0) {
+      Alert.alert(
+        'No Workout Data',
+        'No distance or time recorded. Are you sure you want to finish?',
+        [
+          { text: 'Continue Workout', style: 'cancel' },
+          { text: 'Exit Without Saving', onPress: () => router.back() }
+        ]
+      );
+      return;
+    }
+    
     Alert.alert(
       'Workout Complete!',
-      `Distance: ${(distance / 1000).toFixed(2)} km\nTime: ${formatTime(duration)}\nPace: ${formatPace(currentPace)} min/km`,
+      `Distance: ${(distance / 1000).toFixed(2)} km\nTime: ${formatTime(duration)}\nPace: ${formatPace(currentPace)} min/km\n\nWould you like to save this workout?`,
       [
-        { text: 'Save & Exit', onPress: () => router.back() },
-        { text: 'Continue', style: 'cancel' }
+        { text: 'Save & Exit', onPress: saveWorkout },
+        { text: 'Exit Without Saving', onPress: () => router.back() },
+        { text: 'Continue Workout', style: 'cancel' }
       ]
     );
   };
