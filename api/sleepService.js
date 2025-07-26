@@ -7,7 +7,7 @@ class SleepApiService {
   // Get user's sleep data
   static async getSleepData(userId) {
     try {
-      const response = await fetch(`${BASE_URL}/sleep/${userId}`, {
+      const response = await fetch(`${BASE_URL}/api/sleep/${userId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -20,7 +20,7 @@ class SleepApiService {
       }
 
       const data = await response.json();
-      return data.sleepRecords || [];
+      return data;
     } catch (error) {
       console.error('Error fetching sleep data:', error);
       throw error;
@@ -41,7 +41,7 @@ class SleepApiService {
     };
     console.log('Request body:', requestBody);
     
-    const response = await fetch(`${BASE_URL}/sleep`, {
+    const response = await fetch(`${BASE_URL}/api/sleep`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -52,6 +52,7 @@ class SleepApiService {
     
     console.log('Response status:', response.status);
     console.log('Response headers:', Object.fromEntries(response.headers));
+    
     
     if (!response.ok) {
       // Get the error response body for more details
@@ -91,20 +92,39 @@ class SleepApiService {
   // Update sleep entry
   static async updateSleepEntry(sleepId, sleepData) {
     try {
-      const response = await fetch(`${BASE_URL}/sleep/${sleepId}`, {
+      console.log('Updating sleep data:', { sleepId, sleepData });
+      
+      const authToken = await this.getAuthToken();
+      console.log('Auth token obtained:', authToken ? 'Yes' : 'No');
+      
+      const response = await fetch(`${BASE_URL}/api/sleep/${sleepId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await this.getAuthToken()}`,
+          'Authorization': `Bearer ${authToken}`,
         },
         body: JSON.stringify(sleepData),
       });
 
+      console.log('Update response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Failed to update sleep data');
+        const errorText = await response.text();
+        console.error('Update error response:', errorText);
+        
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (parseError) {
+          errorMessage = errorText || errorMessage;
+        }
+        
+        throw new Error(`Failed to update sleep data: ${errorMessage}`);
       }
 
       const data = await response.json();
+      console.log('Update success response:', data);
       return data.sleepRecord;
     } catch (error) {
       console.error('Error updating sleep data:', error);
@@ -115,7 +135,7 @@ class SleepApiService {
   // Delete sleep entry
   static async deleteSleepEntry(sleepId) {
     try {
-      const response = await fetch(`${BASE_URL}/sleep/${sleepId}`, {
+      const response = await fetch(`${BASE_URL}/api/sleep/${sleepId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -137,7 +157,7 @@ class SleepApiService {
   // Get authentication token 
   static async getAuthToken() {
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await AsyncStorage.getItem('token');
       return token;
     } catch (error) {
       console.error('Error getting auth token:', error);
@@ -146,12 +166,12 @@ class SleepApiService {
   }
 
   // Get current user ID (implement based on your auth system)
-  static async getCurrentUserId() {
+  static async getCurrentUserEmail() {
     try {
-      const userId = await AsyncStorage.getItem('userId');
-      return userId;
+      const email = await AsyncStorage.getItem('userEmail');
+      return email;
     } catch (error) {
-      console.error('Error getting user ID:', error);
+      console.error('Error getting user email:', error);
       return null;
     }
   }

@@ -62,11 +62,6 @@ export default function RecentWorkouts() {
     router.back();
   };
 
-  const handleViewDetails = useCallback((workoutId) => {
-    const encodedId = encodeURIComponent(workoutId);
-    router.push(`/workout/WorkoutDetailScreen?id=${encodedId}`);
-  }, [router]);
-
   const renderWorkoutItem = useCallback(({ item, index }) => {
     const colorIndex = index % 3;
     const accentColor = [COLORS.yellow, COLORS.pink, COLORS.blue][colorIndex];
@@ -95,15 +90,9 @@ export default function RecentWorkouts() {
         <Text style={styles.detail}>
           Calories: <Text style={styles.value}>{item.calories || 0}</Text>
         </Text>
-        <TouchableOpacity
-          style={[styles.detailsButton, { backgroundColor: accentColor }]}
-          onPress={() => handleViewDetails(item._id)}
-        >
-          <Text style={styles.detailsButtonText}>View Details</Text>
-        </TouchableOpacity>
       </View>
     );
-  }, [handleViewDetails]);
+  }, []);
 
   if (loading) {
     return (

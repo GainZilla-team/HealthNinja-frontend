@@ -118,6 +118,15 @@ export default function HomeScreen() {
       route: '../community/CommunityScreen'
     },
     {
+      title: 'Achievements',
+      subtitle: 'Badges & rewards',
+      icon: 'trophy',
+      iconType: Ionicons,
+      color: '#7c3aed',
+      bgColor: '#f3f4f6',
+      route: '../gamification/GamificationScreen'
+    },
+    {
       title: 'Weather',
       subtitle: 'Real-time updates',
       icon: 'cloud',
