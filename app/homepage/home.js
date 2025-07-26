@@ -134,6 +134,15 @@ export default function HomeScreen() {
       color: '#3b82f6',
       bgColor: '#eff6ff',
       route: '../weather/WeatherScreen' // simplified route to WeatherScreen
+    },
+      {
+      title: 'Step Tracker',
+      subtitle: 'Track your daily steps',
+      icon: 'walk', // or 'footsteps' depending on your icon library
+      iconType: Ionicons,
+      color: '#10b981',
+      bgColor: '#ecfdf5',
+      route: '../steptracker/StepTrackerScreen' // path to your StepTrackerScreen
     }
   ];
 
