@@ -23,50 +23,87 @@ export const saveSteps = async (steps) => {
   }
 };
 
-export const fetchTodaySteps = async () => {
+export const fetchStepsData = async (endpoint) => {
   try {
     const token = await AsyncStorage.getItem('token');
-    const today = new Date().toISOString().split('T')[0];
-    const response = await fetch(`${BASE_URL}/api/steps?startDate=${today}&endDate=${today}`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
     });
+
+    // First check - Network errors
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+
+    // Second check - Valid JSON
+    let result;
+    try {
+      result = await response.json();
+    } catch (e) {
+      throw new Error('Invalid JSON response');
+    }
+
+    // Third check - API success flag
+    if (!result?.success) {
+      throw new Error(result?.message || 'API request failed');
+    }
+
+    // Fourth check - Data structure
+    const data = result.data;
+    if (!data) {
+      console.warn('API Warning: Response missing data field', result);
+      return []; // Return safe default
+    }
+
+    // Convert single object to array if needed
+    return Array.isArray(data) ? data : [data];
     
-    if (!response.ok) throw new Error('Failed to fetch steps');
-    const data = await response.json();
-    return data.reduce((sum, entry) => sum + entry.steps, 0);
   } catch (error) {
-    throw error;
+    console.error(`API Error (${endpoint}):`, error);
+    throw error; // Re-throw for UI handling
   }
 };
 
+// Specific methods
+export const fetchTodaySteps = async () => {
+  const data = await fetchStepsData('/api/steps/today');
+  return data.reduce((sum, item) => sum + (item.steps || 0), 0);
+};
+
 export const fetchWeeklyData = async () => {
+  return await fetchStepsData('/api/steps/weekly');
+};
+
+async function logSteps(steps) {
   try {
     const token = await AsyncStorage.getItem('token');
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(endDate.getDate() - 6); // Last 7 days
-    
-    const response = await fetch(
-      `${BASE_URL}/api/steps?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`,
-      { headers: { 'Authorization': `Bearer ${token}` } }
-    );
-    
-    if (!response.ok) throw new Error('Failed to fetch weekly data');
-    const data = await response.json();
-    
-    return Array(7).fill(0).map((_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (6 - i));
-      const dateStr = date.toLocaleDateString('en-US', { weekday: 'short' });
-      const dayData = data.find(item => 
-        new Date(item.date).toDateString() === date.toDateString()
-      );
-      return {
-        date: dateStr,
-        steps: dayData ? dayData.steps : 0,
-      };
+    const response = await fetch(`${BASE_URL}/api/steps`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        steps: steps,
+        date: new Date().toISOString()
+      })
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    if (result.success) {
+      // Refresh the data
+      fetchTodaySteps();
+      fetchWeeklyData();
+    } else {
+      throw new Error('Failed to log steps');
+    }
   } catch (error) {
-    throw error;
+    console.error('Error logging steps:', error);
+    Alert.alert('Error', 'Failed to log steps');
   }
 };

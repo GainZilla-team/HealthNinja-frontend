@@ -1,15 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+import { useRouter } from 'expo-router';
 import { Pedometer } from 'expo-sensors';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Dimensions, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import styles from './StepTrackerStyles';
 
 const BASE_URL = Constants.expoConfig?.extra?.BASE_URL;
-const screenWidth = Dimensions.get('window').width;
 
-// Progress Circle Component
 const ProgressCircle = ({ progress, dailyGoal }) => {
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
@@ -32,7 +31,7 @@ const ProgressCircle = ({ progress, dailyGoal }) => {
           cx="60"
           cy="60"
           r={radius}
-          stroke="#007aff"
+          stroke="#3b82f6"
           strokeWidth="10"
           fill="transparent"
           strokeDasharray={circumference}
@@ -50,134 +49,64 @@ const ProgressCircle = ({ progress, dailyGoal }) => {
 };
 
 export default function StepTrackerScreen() {
+  const router = useRouter();
   const [currentSteps, setCurrentSteps] = useState(0);
-  const [manualSteps, setManualSteps] = useState('');
-  const [isTracking, setIsTracking] = useState(false);
   const [todaySteps, setTodaySteps] = useState(0);
-  const [weeklyData, setWeeklyData] = useState([]);
   const [dailyGoal, setDailyGoal] = useState(10000);
   const [goalReached, setGoalReached] = useState(false);
-  const [showLineChart, setShowLineChart] = useState(true);
+  const [isTracking, setIsTracking] = useState(false);
   const [subscription, setSubscription] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [manualSteps, setManualSteps] = useState('');
 
-  // 1. First define all helper functions
   const handleApiResponse = async (response) => {
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      const text = await response.text();
-      throw new Error(text || 'Server returned non-JSON response');
-    }
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Request failed');
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
     return response.json();
   };
 
-  const checkPedometerAvailability = async () => {
+  const saveSteps = useCallback(async (stepsToSave) => {
+    try {
+        console.log('[DEBUG] Starting to save steps:', stepsToSave); // ADD THIS
+        
+        const token = await AsyncStorage.getItem('token');
+        const response = await fetch(`${BASE_URL}/api/steps`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+            steps: stepsToSave, 
+            date: new Date().toISOString() 
+        })
+        });
+
+        const result = await handleApiResponse(response);
+        console.log('[DEBUG] API Response:', result); // ADD THIS
+        
+        setTodaySteps(prev => {
+        const newTotal = prev + stepsToSave;
+        console.log('[DEBUG] Updating todaySteps from', prev, 'to', newTotal); // ADD THIS
+        return newTotal;
+        });
+        
+        return result;
+    } catch (error) {
+        console.error('[ERROR] Failed to save steps:', error); // ADD THIS
+        throw error;
+    }
+    }, [BASE_URL]);
+
+  const startStepTracking = async () => {
     try {
       const isAvailable = await Pedometer.isAvailableAsync();
       if (!isAvailable) {
         Alert.alert('Warning', 'Step tracking not available on this device');
-        return false;
+        return;
       }
-      return true;
-    } catch (error) {
-      console.error('Pedometer check failed:', error);
-      return false;
-    }
-  };
-
-  const loadUserSettings = async () => {
-    try {
-      const savedGoal = await AsyncStorage.getItem('dailyStepGoal');
-      if (savedGoal) setDailyGoal(parseInt(savedGoal, 10));
-    } catch (error) {
-      console.error('Error loading settings:', error);
-    }
-  };
-
-  // 2. Then define API-related functions
-  const fetchTodaySteps = useCallback(async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) return;
-
-      const today = new Date().toISOString().split('T')[0];
-      const response = await fetch(
-        `${BASE_URL}/api/steps?startDate=${today}&endDate=${today}`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      const data = await handleApiResponse(response);
-      setTodaySteps(data.reduce((sum, entry) => sum + (entry.steps || 0), 0));
-    } catch (error) {
-      console.error('Fetch today steps error:', error);
-      setTodaySteps(0);
-    }
-  }, [BASE_URL]);
-
-  const fetchWeeklyData = useCallback(async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) return;
-
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(endDate.getDate() - 6);
-
-      const response = await fetch(
-        `${BASE_URL}/api/steps?startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      const data = await handleApiResponse(response);
-
-      const formattedData = Array(7).fill(0).map((_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - (6 - i));
-        return {
-          date: date.toLocaleDateString('en-US', { weekday: 'short' }),
-          steps: data.find(item => 
-            new Date(item.date).toDateString() === date.toDateString()
-          )?.steps || 0
-        };
-      });
-
-      setWeeklyData(formattedData);
-    } catch (error) {
-      console.error('Fetch weekly data error:', error);
-      setWeeklyData([]);
-    }
-  }, [BASE_URL]);
-
-  const saveSteps = useCallback(async (stepsToSave) => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) throw new Error('Authentication required');
-
-      const response = await fetch(`${BASE_URL}/api/steps`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ steps: stepsToSave, date: new Date().toISOString() })
-      });
-
-      await handleApiResponse(response);
-      await fetchTodaySteps();
-      await fetchWeeklyData();
-    } catch (error) {
-      console.error('Save steps error:', error);
-      throw error;
-    }
-  }, [BASE_URL, fetchTodaySteps, fetchWeeklyData]);
-
-  // 3. Then define tracking functions
-  const startStepTracking = async () => {
-    try {
-      const isAvailable = await checkPedometerAvailability();
-      if (!isAvailable) return;
 
       const newSubscription = Pedometer.watchStepCount(result => {
         setCurrentSteps(result.steps);
@@ -197,7 +126,6 @@ export default function StepTrackerScreen() {
     setIsTracking(false);
   };
 
-  // 4. Then define handlers
   const handleSaveSteps = async () => {
     try {
       if (currentSteps <= 0) {
@@ -212,30 +140,61 @@ export default function StepTrackerScreen() {
     }
   };
 
+  const fetchTodaySteps = useCallback(async () => {
+    try {
+        const token = await AsyncStorage.getItem('token');
+        
+        // Get start and end of current day
+        const now = new Date();
+        const startOfDay = new Date(now.setHours(0, 0, 0, 0)).toISOString();
+        const endOfDay = new Date(now.setHours(23, 59, 59, 999)).toISOString();
+
+        const response = await fetch(
+        `${BASE_URL}/api/steps?startDate=${startOfDay}&endDate=${endOfDay}`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+
+        const result = await handleApiResponse(response);
+        const totalSteps = result.data?.reduce((sum, entry) => sum + (entry.steps || 0), 0) || 0;
+        setTodaySteps(totalSteps);
+    } catch (error) {
+        console.error('Fetch today steps error:', error);
+        setTodaySteps(0);
+    }
+    }, [BASE_URL]);
+
   const handleSaveManualSteps = async () => {
     try {
-      const steps = parseInt(manualSteps, 10);
-      if (isNaN(steps)) {
+        console.log('[DEBUG] Manual steps input:', manualSteps); // ADD THIS
+        
+        const steps = parseInt(manualSteps, 10);
+        if (isNaN(steps) || steps <= 0) {
+        console.log('[DEBUG] Invalid steps input'); // ADD THIS
         Alert.alert('Invalid', 'Please enter a valid number');
         return;
-      }
-      await saveSteps(steps);
-      setManualSteps('');
-      Alert.alert('Success', 'Manual steps saved');
+        }
+        
+        console.log('[DEBUG] Calling saveSteps with', steps); // ADD THIS
+        await saveSteps(steps);
+        
+        setManualSteps('');
+        console.log('[DEBUG] Manual steps saved, fetching latest data'); // ADD THIS
+        await fetchTodaySteps();
+        
+        Alert.alert('Success', `${steps} steps added to today's total`);
     } catch (error) {
-      Alert.alert('Error', error.message);
+        console.error('[ERROR] Manual save failed:', error); // ADD THIS
+        Alert.alert('Error', error.message);
     }
-  };
+    };
 
-  // 5. Finally, useEffect hooks
   useEffect(() => {
     const initialize = async () => {
       try {
         setIsLoading(true);
-        await loadUserSettings();
-        await checkPedometerAvailability();
+        const savedGoal = await AsyncStorage.getItem('dailyStepGoal');
+        if (savedGoal) setDailyGoal(parseInt(savedGoal, 10));
         await fetchTodaySteps();
-        await fetchWeeklyData();
       } catch (error) {
         console.error('Initialization error:', error);
       } finally {
@@ -258,26 +217,116 @@ export default function StepTrackerScreen() {
     }
   }, [todaySteps, dailyGoal]);
 
-  // Render
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#3b82f6" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {isLoading && <Text>Loading...</Text>}
-      <Text style={styles.header}>Step Tracker</Text>
-      
-      {/* Progress Section */}
-      <View style={styles.progressCard}>
-        <ProgressCircle progress={todaySteps} dailyGoal={dailyGoal} />
-        <View style={styles.progressTextContainer}>
-          <Text style={styles.stepCount}>{todaySteps.toLocaleString()}</Text>
-          <Text style={styles.goalText}>of {dailyGoal.toLocaleString()} steps</Text>
-          <Text style={goalReached ? styles.goalReached : styles.goalNotReached}>
-            {goalReached ? 'Goal Achieved!' : 'Keep going!'}
-          </Text>
-        </View>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Step Tracker</Text>
+        <Text style={styles.headerSubtitle}>Track your daily steps and activity</Text>
       </View>
 
-      {/* Rest of your UI components */}
-      {/* ... */}
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.contentContainer}>
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View style={styles.iconContainer}>
+                <Text style={{ fontSize: 18 }}>👟</Text>
+              </View>
+              <Text style={styles.cardTitle}>Today's Steps</Text>
+            </View>
+
+            <View style={styles.progressRow}>
+              <ProgressCircle progress={todaySteps} dailyGoal={dailyGoal} />
+              <View style={styles.progressTextContainer}>
+                <Text style={styles.stepCount}>{todaySteps.toLocaleString()}</Text>
+                <Text style={styles.goalText}>of {dailyGoal.toLocaleString()} steps</Text>
+                <Text style={goalReached ? styles.goalReached : styles.goalNotReached}>
+                  {goalReached ? 'Goal Achieved!' : 'Keep going!'}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View style={styles.iconContainer}>
+                <Text style={{ fontSize: 18 }}>⏱️</Text>
+              </View>
+              <Text style={styles.cardTitle}>Live Tracking</Text>
+            </View>
+
+            <Text style={styles.label}>Current Session: {currentSteps.toLocaleString()} steps</Text>
+            
+            {isTracking ? (
+              <TouchableOpacity
+                onPress={stopStepTracking}
+                style={[styles.button, styles.stopButton]}
+              >
+                <Text style={styles.buttonText}>Stop Tracking</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={startStepTracking}
+                style={styles.button}
+              >
+                <Text style={styles.buttonText}>Start Tracking</Text>
+              </TouchableOpacity>
+            )}
+
+            {currentSteps > 0 && (
+              <TouchableOpacity
+                onPress={handleSaveSteps}
+                style={[styles.button, styles.saveButton]}
+              >
+                <Text style={styles.buttonText}>Save Steps</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View style={styles.iconContainer}>
+                <Text style={{ fontSize: 18 }}>✏️</Text>
+              </View>
+              <Text style={styles.cardTitle}>Manual Entry</Text>
+            </View>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Enter steps count"
+              placeholderTextColor="#94a3b8"
+              value={manualSteps}
+              onChangeText={setManualSteps}
+              keyboardType="numeric"
+            />
+
+            <TouchableOpacity
+              onPress={handleSaveManualSteps}
+              disabled={!manualSteps}
+              style={[styles.button, { backgroundColor: !manualSteps ? '#94a3b8' : '#3b82f6' }]}
+            >
+              <Text style={styles.buttonText}>Save Manual Steps</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+
+      <View style={styles.bottomNav}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <Text style={{ fontSize: 16, marginRight: 8 }}>←</Text>
+          <Text style={styles.backButtonText}>Back to Home</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

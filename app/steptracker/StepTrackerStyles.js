@@ -3,45 +3,85 @@ import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5'
+    backgroundColor: '#f8fafc',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    backgroundColor: '#3b82f6',
+    paddingTop: 60,
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: 'white',
     textAlign: 'center',
-    color: '#333'
+    marginBottom: 8,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.8)',
+    textAlign: 'center',
+    fontWeight: '300',
+  },
+  contentContainer: {
+    padding: 20,
+    marginTop: -15,
   },
   card: {
     backgroundColor: 'white',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 20,
-    marginBottom: 15,
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
-  progressCard: {
+  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3
+    marginBottom: 16,
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   progressContainer: {
     position: 'relative',
     width: 120,
     height: 120,
-    marginRight: 20
+    marginRight: 20,
   },
   progressText: {
     position: 'absolute',
@@ -50,50 +90,82 @@ export default StyleSheet.create({
     transform: [{ translateX: -25 }, { translateY: -10 }],
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#007aff'
+    color: '#3b82f6',
   },
   progressTextContainer: {
-    flex: 1
+    flex: 1,
   },
   stepCount: {
     fontSize: 32,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 5
+    marginBottom: 5,
   },
   goalText: {
     fontSize: 16,
     color: '#666',
-    marginBottom: 10
+    marginBottom: 10,
   },
   goalReached: {
-    color: '#4CAF50',
-    fontWeight: 'bold'
+    color: '#10b981',
+    fontWeight: 'bold',
   },
   goalNotReached: {
-    color: '#FF9800',
-    fontWeight: 'bold'
+    color: '#f59e0b',
+    fontWeight: 'bold',
   },
   label: {
     fontSize: 16,
-    marginBottom: 10,
-    color: '#333'
+    marginBottom: 15,
+    color: '#334155',
   },
   input: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 15,
-    fontSize: 16
+    borderColor: '#e2e8f0',
+    color: '#334155',
   },
-  chart: {
-    marginVertical: 8,
-    borderRadius: 16
+  button: {
+    backgroundColor: '#3b82f6',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
   },
-  chartToggle: {
+  stopButton: {
+    backgroundColor: '#ef4444',
+  },
+  saveButton: {
+    backgroundColor: '#10b981',
+    marginTop: 10,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  bottomNav: {
+    backgroundColor: 'white',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  backButton: {
+    backgroundColor: '#64748b',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 10
-  }
+    justifyContent: 'center',
+  },
+  backButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
