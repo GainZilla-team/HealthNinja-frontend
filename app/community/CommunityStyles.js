@@ -1,80 +1,87 @@
 import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#FFC0CB',
-  },
-  button: {
-    marginTop: 25,
-  },
-  content: {
-    marginTop: 40,
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 16,
-    fontWeight: 'bold',
-  },
-  formContainer: {
-    marginBottom: 16,
-  },
-  input: {
-    borderColor: 'grey',
-    borderWidth: 1,
-    padding: 10,
-    marginBottom: 8,
-    borderRadius: 8,
-  },
   postContainer: {
-    backgroundColor: '#f9f9f9',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  postHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
   postEmail: {
     fontWeight: 'bold',
-    marginBottom: 4,
+    color: '#3b82f6',
+  },
+  postDate: {
+    color: '#64748b',
+    fontSize: 12,
   },
   postContent: {
-    marginBottom: 6,
+    fontSize: 16,
+    lineHeight: 22,
+    marginBottom: 12,
+    color: '#1e293b',
+  },
+  deleteButton: {
+    marginBottom: 12,
   },
   commentsContainer: {
-    marginTop: 8,
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+    paddingTop: 12,
   },
-  comment: {
-    fontSize: 12,
-    color: 'grey',
-  },
-  commentInputContainer: {
-    marginTop: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  commentInput: {
-    flex: 1,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    padding: 6,
-    borderRadius: 4,
-  },
-  commentsContainer: {
-    marginTop: 10,
-    paddingLeft: 10,
-    borderLeftWidth: 2,
-    borderLeftColor: '#ccc',
+  commentsTitle: {
+    fontWeight: '600',
+    marginBottom: 8,
+    color: '#475569',
   },
   commentContainer: {
-    marginBottom: 5,
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+  },
+  commentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
   },
   commentEmail: {
-    fontWeight: 'bold',
+    fontWeight: '600',
+    color: '#3b82f6',
+    fontSize: 14,
+  },
+  commentDate: {
+    color: '#64748b',
+    fontSize: 12,
+    fontStyle: 'italic',
   },
   commentText: {
-    marginLeft: 5,
-    color:'black',
+    fontSize: 14,
+    color: '#000000', // Black color for comment text
+    lineHeight: 20,
   },
-
+  commentInputContainer: {
+    marginTop: 12,
+  },
+  commentInput: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+    backgroundColor: '#ffffff',
+    minHeight: 50,
+    color: '#000000', // Black color for input text
+  },
 });

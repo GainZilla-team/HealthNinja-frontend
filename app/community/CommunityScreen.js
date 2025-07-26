@@ -172,11 +172,26 @@ export default function CommunityScreen() {
                 {posts.map((post) => (
                   <View key={post._id} style={{ marginBottom: 16 }}>
                     <Post
-                      post={post}
-                      onDelete={(id) => {
-                        setPosts((prev) => prev.filter((p) => p._id !== id));
-                      }}
-                    />
+                    post={post}
+                    onDelete={(id) => {
+                      setPosts((prev) => prev.filter((p) => p._id !== id));
+                    }}
+                    onCommentAdded={(postId, updatedComments) => {
+                      setPosts((prevPosts) =>
+                        prevPosts.map((p) =>
+                          p._id === postId ? { ...p, comments: updatedComments } : p
+                        )
+                      );
+                    }}
+                    onCommentDeleted={(postId, updatedComments) => {
+                      setPosts((prevPosts) =>
+                        prevPosts.map((p) =>
+                          p._id === postId ? { ...p, comments: updatedComments } : p
+                        )
+                      );
+                    }}
+                  />
+
                   </View>
                 ))}
               </ScrollView>
