@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-
 import Constants from 'expo-constants';
+
 const BASE_URL = Constants.expoConfig?.extra?.BASE_URL;
 
 export const register = async (email, password) => {
@@ -18,9 +18,12 @@ export const register = async (email, password) => {
 
 export const login = async (email, password) => {
   try {
-    const res = await axios.post(`${BASE_URL}/api/auth/login`, { email, password });
+    // No push token request or sending
 
-    console.log('Login axios response:', res.data);
+    const res = await axios.post(`${BASE_URL}/api/auth/login`, {
+      email,
+      password,
+    });
 
     if (res.data.token) {
       await AsyncStorage.setItem('token', res.data.token);
@@ -30,11 +33,9 @@ export const login = async (email, password) => {
       throw new Error('No token returned from login');
     }
   } catch (err) {
-    console.error('Login error:', err.response?.data || err.message);
     throw new Error(err.response?.data?.message || 'Login failed');
   }
 };
-
 
 export const getProfile = async () => {
   const token = await AsyncStorage.getItem('token');
