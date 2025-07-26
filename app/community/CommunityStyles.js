@@ -1,3 +1,4 @@
+// CommunityStyles.js
 import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
@@ -64,11 +65,10 @@ export default StyleSheet.create({
   commentDate: {
     color: '#64748b',
     fontSize: 12,
-    fontStyle: 'italic',
   },
   commentText: {
     fontSize: 14,
-    color: '#000000', // Black color for comment text
+    color: '#334155',
     lineHeight: 20,
   },
   commentInputContainer: {
@@ -82,6 +82,5 @@ export default StyleSheet.create({
     marginBottom: 8,
     backgroundColor: '#ffffff',
     minHeight: 50,
-    color: '#000000', // Black color for input text
   },
 });

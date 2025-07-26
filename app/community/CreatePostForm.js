@@ -28,9 +28,10 @@ export default function CreatePostForm({ onPostCreated }) {
 
     console.log('Starting post creation...');
     setIsSubmitting(true);
-
+    
     try {
       const token = await AsyncStorage.getItem('token');
+      console.log("🔑 Token for creating post:", token);
       console.log('Token:', token ? 'Token found' : 'No token found');
 
       if (!token) {

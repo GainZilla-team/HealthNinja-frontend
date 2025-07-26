@@ -1,5 +1,13 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+
 const BASE_URL = Constants.expoConfig?.extra?.BASE_URL;
+
+const getAuthToken = async () => {
+  const token = await AsyncStorage.getItem('token');
+  if (!token) throw new Error('Not logged in');
+  return token;
+};
 
 export const fetchPosts = async () => {
   const response = await fetch(`${BASE_URL}/api/posts`);
@@ -9,7 +17,9 @@ export const fetchPosts = async () => {
   return await response.json();
 };
 
-export const createPost = async (content, token) => {
+export const createPost = async (content) => {
+  const token = await getAuthToken();
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000);
 
@@ -41,7 +51,9 @@ export const createPost = async (content, token) => {
   }
 };
 
-export const deletePost = async (postId, token) => {
+export const deletePost = async (postId) => {
+  const token = await getAuthToken();
+
   const response = await fetch(`${BASE_URL}/api/posts/${postId}`, {
     method: 'DELETE',
     headers: {
