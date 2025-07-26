@@ -218,7 +218,26 @@ const SleepTracker = () => {
       Alert.alert('Success', 'Sleep data saved successfully!');
     } catch (error) {
       console.error('Error saving sleep data:', error);
-      Alert.alert('Error', 'Failed to save sleep data. Please try again.');
+      
+      let errorMessage = 'Failed to save sleep data. Please try again.';
+      let errorTitle = 'Error';
+      
+      // Check for specific error messages
+      if (error.message.includes('Sleep record already exists for this date')) {
+        errorTitle = 'Already Tracked Today';
+        errorMessage = 'You\'ve already logged sleep for today. You can edit your existing entry or delete it to create a new one.';
+      } else if (error.message.includes('Missing required fields')) {
+        errorTitle = 'Invalid Data';
+        errorMessage = 'Some required information is missing. Please try tracking your sleep again.';
+      } else if (error.message.includes('Quality rating must be between 1 and 5')) {
+        errorTitle = 'Invalid Rating';
+        errorMessage = 'Please select a quality rating between 1 and 5 stars.';
+      } else if (error.message.includes('User not found')) {
+        errorTitle = 'Authentication Error';
+        errorMessage = 'Please log out and log back in to continue.';
+      }
+      
+      Alert.alert(errorTitle, errorMessage);
     } finally {
       setLoading(false);
     }
