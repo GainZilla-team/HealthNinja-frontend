@@ -208,9 +208,8 @@ export default function RunningScreen() {
       const workoutData = {
         type: 'running',
         duration: formatTime(duration), // in MM:SS
-        distance: (distance / 1000).toFixed(2), // in km
-        pace: formatPace(currentPace), // min/km
-        route: routeRef.current, // GPS coordinates array
+        distance: Number((distance / 1000).toFixed(2)), // in km, as a number
+        pace: Number(currentPace.toFixed(2)), // min/km as a number
         startTime: new Date(startTimeRef.current).toISOString(),
         endTime: new Date().toISOString(),
         calories: Math.round((distance / 1000) * 60), // Rough estimate: 60 calories per km

@@ -51,14 +51,14 @@ const SleepTracker = () => {
       setLoading(true);
       
       // Get user ID from storage (implement based on your auth system)
-      const currentUserId = await SleepApiService.getCurrentUserId();
-      if (!currentUserId) {
+      const currentUserEmail = await SleepApiService.getCurrentUserEmail();
+      if (!currentUserEmail) {
         Alert.alert('Error', 'Please log in to access sleep tracking');
         return;
       }
       
-      setUserId(currentUserId);
-      await loadSleepData(currentUserId);
+      setUserId(currentUserEmail);
+      await loadSleepData(currentUserEmail);
       
       // Check if there's an ongoing sleep session
       const savedTrackingState = await AsyncStorage.getItem('sleepTracking');
@@ -77,7 +77,9 @@ const SleepTracker = () => {
 
   const loadSleepData = async (currentUserId) => {
     try {
+      console.log('Loading sleep data for user:', currentUserId);
       const response = await SleepApiService.getSleepData(currentUserId);
+      console.log('Sleep API response:', response);
       
       // Transform data for the component
       const transformedData = response.sleepRecords?.map(record => ({
@@ -90,6 +92,7 @@ const SleepTracker = () => {
         notes: record.notes
       })) || [];
 
+      console.log('Transformed sleep data:', transformedData);
       setSleepData(transformedData);
       setSummary(response.summary || { averageDuration: 0, averageQuality: 0, totalRecords: 0 });
     } catch (error) {
@@ -155,7 +158,11 @@ const SleepTracker = () => {
     } else {
       // End tracking
       const endTime = new Date();
-      const duration = (endTime - trackingStartTime) / (1000 * 60 * 60);
+      const durationMs = endTime - trackingStartTime;
+      const totalMinutes = Math.max(Math.floor(durationMs / (1000 * 60)), 0);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      const duration = hours + (minutes / 60); // Convert to decimal hours
       
       Alert.alert(
         'Sleep Session Complete',
@@ -195,7 +202,6 @@ const SleepTracker = () => {
       setLoading(true);
       
       const sleepData = {
-        userId,
         bedtime: formatTime(startTime),
         wakeupTime: formatTime(endTime),
         duration: parseFloat(duration.toFixed(2)),
@@ -213,6 +219,39 @@ const SleepTracker = () => {
     } catch (error) {
       console.error('Error saving sleep data:', error);
       Alert.alert('Error', 'Failed to save sleep data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const editSleepEntry = (entry) => {
+    Alert.alert(
+      'Edit Sleep Quality',
+      `Current quality: ${entry.quality}/5 stars`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: '⭐ Poor (1)', onPress: () => updateSleepQuality(entry.id, 1) },
+        { text: '⭐⭐ Fair (2)', onPress: () => updateSleepQuality(entry.id, 2) },
+        { text: '⭐⭐⭐ Good (3)', onPress: () => updateSleepQuality(entry.id, 3) },
+        { text: '⭐⭐⭐⭐ Great (4)', onPress: () => updateSleepQuality(entry.id, 4) },
+        { text: '⭐⭐⭐⭐⭐ Excellent (5)', onPress: () => updateSleepQuality(entry.id, 5) },
+      ]
+    );
+  };
+
+  const updateSleepQuality = async (entryId, newQuality) => {
+    try {
+      setLoading(true);
+      
+      await SleepApiService.updateSleepEntry(entryId, { quality: newQuality });
+      
+      // Reload data to update UI
+      await loadSleepData(userId);
+      
+      Alert.alert('Success', 'Sleep quality updated successfully!');
+    } catch (error) {
+      console.error('Error updating sleep quality:', error);
+      Alert.alert('Error', 'Failed to update sleep quality. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -384,33 +423,52 @@ const SleepTracker = () => {
         {/* Recent Sleep History */}
         <View style={styles.historySection}>
           <Text style={styles.sectionTitle}>Recent Sleep</Text>
-          {sleepData.slice(0, 5).map((entry, index) => (
-            <View key={entry.id} style={styles.historyItem}>
-              <View style={styles.historyDate}>
-                <Text style={styles.historyDateText}>{entry.date}</Text>
-              </View>
-              <View style={styles.historyDetails}>
-                <Text style={styles.historyDuration}>{entry.duration}h</Text>
-                <View style={styles.qualityStars}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Text key={star} style={[
-                      styles.star, 
-                      star <= entry.quality && styles.starFilled
-                    ]}>
-                      ⭐
-                    </Text>
-                  ))}
+          {sleepData.length > 0 ? (
+            sleepData.slice(0, 5).map((entry) => (
+              <View key={entry.id} style={styles.historyItem}>
+                <View style={styles.historyDate}>
+                  <Text style={styles.historyDateText}>{entry.date}</Text>
+                  <Text style={styles.historyTimeText}>
+                    {entry.bedtime} - {entry.wakeupTime}
+                  </Text>
+                </View>
+                <View style={styles.historyDetails}>
+                  <Text style={styles.historyDuration}>{entry.duration}h</Text>
+                  <View style={styles.qualityStars}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Text key={star} style={[
+                        styles.star, 
+                        star <= entry.quality && styles.starFilled
+                      ]}>
+                        ⭐
+                      </Text>
+                    ))}
+                  </View>
+                </View>
+                <View style={styles.actionButtons}>
+                  <TouchableOpacity 
+                    style={styles.editButton}
+                    onPress={() => editSleepEntry(entry)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.editButtonText}>✏️</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.deleteButton}
+                    onPress={() => deleteSleepEntry(entry.id)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.deleteButtonText}>🗑️</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
-              <TouchableOpacity 
-                style={styles.deleteButton}
-                onPress={() => deleteSleepEntry(entry.id)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.deleteButtonText}>🗑️</Text>
-              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={styles.historyItem}>
+              <Text style={styles.historyDateText}>No sleep data yet</Text>
+              <Text style={styles.historyTimeText}>Start tracking your sleep to see history here</Text>
             </View>
-          ))}
+          )}
         </View>
 
         {/* Bottom Spacing */}

@@ -127,6 +127,11 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     fontWeight: '500',
   },
+  historyTimeText: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 2,
+  },
   historyDetails: {
     flex: 1,
     flexDirection: 'row',
@@ -150,6 +155,22 @@ const styles = StyleSheet.create({
   starFilled: {
     color: '#fbbf24',
   },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  editButton: {
+    backgroundColor: '#059669',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  editButtonText: {
+    fontSize: 16,
+    color: '#ffffff',
+  },
   deleteButton: {
     backgroundColor: '#dc2626',
     borderRadius: 8,
@@ -161,6 +182,21 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 16,
     color: '#ffffff',
+  },
+  buttonLoader: {
+    position: 'absolute',
+    right: 10,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#1a1a28',
+  },
+  loadingText: {
+    color: '#ffffff',
+    marginTop: 10,
+    fontSize: 16,
   },
   bottomSpacing: {
     height: 20,

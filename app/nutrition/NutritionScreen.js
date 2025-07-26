@@ -2,9 +2,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { deleteMeal } from '../../api/logMealService';
 
 const BASE_URL = Constants.expoConfig?.extra?.BASE_URL;
+
 
 export default function NutritionScreen() {
   const router = useRouter();
@@ -205,6 +207,37 @@ export default function NutritionScreen() {
       carbs: totals.carbs + (meal.carbs || 0),
       fat: totals.fat + (meal.fat || 0),
     }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+  };
+
+  const deleteMealEntry = async (mealId) => {
+    Alert.alert(
+      'Delete Meal Entry',
+      'Are you sure you want to delete this meal record?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setLoadingMeals(true);
+              await deleteMeal(mealId);
+              // Update local state by filtering out the deleted meal
+              setLoggedMeals(prev => prev.filter(meal => meal._id !== mealId));
+              Alert.alert('Success', 'Meal deleted successfully!');
+            } catch (error) {
+              console.error('Error deleting meal:', error);
+              Alert.alert('Error', 'Failed to delete meal. Please try again.');
+            } finally {
+              setLoadingMeals(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const groupedMeals = groupMealsByDateAndType(loggedMeals);
@@ -548,36 +581,55 @@ export default function NutritionScreen() {
                       borderLeftWidth: 3,
                       borderLeftColor: '#f59e0b'
                     }}>
-                      <Text style={{ fontSize: 14, fontWeight: '600', color: '#1e293b', marginBottom: 4 }}>
-                        {meal.name}
-                      </Text>
-                      
-                      {meal.brand && (
-                        <Text style={{ fontSize: 11, color: '#ec4899', marginBottom: 6 }}>
-                          {meal.brand}
-                        </Text>
-                      )}
-                      
-                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 6 }}>
-                        <View style={{ backgroundColor: '#fef3c7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 }}>
-                          <Text style={{ fontSize: 11, color: '#92400e', fontWeight: '500' }}>{meal.calories} cal</Text>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <View style={{ flex: 1, marginRight: 12 }}>
+                          <Text style={{ fontSize: 14, fontWeight: '600', color: '#1e293b', marginBottom: 4 }}>
+                            {meal.name}
+                          </Text>
+                          
+                          {meal.brand && (
+                            <Text style={{ fontSize: 11, color: '#ec4899', marginBottom: 6 }}>
+                              {meal.brand}
+                            </Text>
+                          )}
+                          
+                          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 6 }}>
+                            <View style={{ backgroundColor: '#fef3c7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 }}>
+                              <Text style={{ fontSize: 11, color: '#92400e', fontWeight: '500' }}>{meal.calories} cal</Text>
+                            </View>
+                            <View style={{ backgroundColor: '#fee2e2', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 }}>
+                              <Text style={{ fontSize: 11, color: '#991b1b', fontWeight: '500' }}>{meal.protein}g protein</Text>
+                            </View>
+                            <View style={{ backgroundColor: '#e0f2fe', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 }}>
+                              <Text style={{ fontSize: 11, color: '#0c4a6e', fontWeight: '500' }}>{meal.carbs}g carbs</Text>
+                            </View>
+                            <View style={{ backgroundColor: '#f3e8ff', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 }}>
+                              <Text style={{ fontSize: 11, color: '#581c87', fontWeight: '500' }}>{meal.fat}g fat</Text>
+                            </View>
+                          </View>
+                          
+                          <Text style={{ fontSize: 11, color: '#64748b' }}>
+                            {meal.mealType.charAt(0).toUpperCase() + meal.mealType.slice(1)}
+                            {meal.servingSize && ` • ${meal.servingSize}`}
+                            {` • ${new Date(meal.date).toLocaleDateString()}`}
+                          </Text>
                         </View>
-                        <View style={{ backgroundColor: '#fee2e2', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 }}>
-                          <Text style={{ fontSize: 11, color: '#991b1b', fontWeight: '500' }}>{meal.protein}g protein</Text>
-                        </View>
-                        <View style={{ backgroundColor: '#e0f2fe', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 }}>
-                          <Text style={{ fontSize: 11, color: '#0c4a6e', fontWeight: '500' }}>{meal.carbs}g carbs</Text>
-                        </View>
-                        <View style={{ backgroundColor: '#f3e8ff', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 }}>
-                          <Text style={{ fontSize: 11, color: '#581c87', fontWeight: '500' }}>{meal.fat}g fat</Text>
-                        </View>
+                        
+                        <TouchableOpacity 
+                          style={{
+                            backgroundColor: '#dc2626',
+                            borderRadius: 8,
+                            paddingHorizontal: 8,
+                            paddingVertical: 6,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                          onPress={() => deleteMealEntry(meal._id)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={{ fontSize: 12, color: '#ffffff' }}>🗑️</Text>
+                        </TouchableOpacity>
                       </View>
-                      
-                      <Text style={{ fontSize: 11, color: '#64748b' }}>
-                        {meal.mealType.charAt(0).toUpperCase() + meal.mealType.slice(1)}
-                        {meal.servingSize && ` • ${meal.servingSize}`}
-                        {` • ${new Date(meal.date).toLocaleDateString()}`}
-                      </Text>
                     </View>
                   ))}
                 </ScrollView>
@@ -803,13 +855,29 @@ export default function NutritionScreen() {
                                   <Text style={{ 
                                     fontSize: 11, 
                                     color: '#64748b',
-                                    textAlign: 'right'
+                                    textAlign: 'right',
+                                    marginBottom: 8
                                   }}>
                                     {new Date(meal.date).toLocaleTimeString([], { 
                                       hour: '2-digit', 
                                       minute: '2-digit' 
                                     })}
                                   </Text>
+                                  
+                                  <TouchableOpacity 
+                                    style={{
+                                      backgroundColor: '#dc2626',
+                                      borderRadius: 6,
+                                      paddingHorizontal: 6,
+                                      paddingVertical: 4,
+                                      justifyContent: 'center',
+                                      alignItems: 'center',
+                                    }}
+                                    onPress={() => deleteMealEntry(meal._id)}
+                                    activeOpacity={0.7}
+                                  >
+                                    <Text style={{ fontSize: 10, color: '#ffffff' }}>🗑️</Text>
+                                  </TouchableOpacity>
                                 </View>
                               </View>
                             </View>
