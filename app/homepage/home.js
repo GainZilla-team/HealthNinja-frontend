@@ -117,6 +117,15 @@ export default function HomeScreen() {
       color: '#ec4899',
       bgColor: '#fdf2f8',
       route: '../community/CommunityScreen'
+    },
+    {
+      title: 'Achievements',
+      subtitle: 'Badges & rewards',
+      icon: 'trophy',
+      iconType: Ionicons,
+      color: '#7c3aed',
+      bgColor: '#f3f4f6',
+      route: '../gamification/GamificationScreen'
     }
   ];
 
