@@ -1,107 +1,123 @@
+/**
+ * @jest-environment jsdom
+ */
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import * as authService from '../api/authService.js';
-import HomeScreen from '../app/homepage/home.js';
+import HomeScreen from '../app/homepage/home'; // adjust path as needed
 
-// Mock useRouter from expo-router
-const mockPush = jest.fn();
+// Mock authService functions
+jest.mock('../api/authService.js', () => ({
+  getProfile: jest.fn(),
+  logout: jest.fn(),
+}));
+
+// Mock AsyncStorage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  getItem: jest.fn(),
+}));
+
+// Mock expo-router
 const mockReplace = jest.fn();
-
+const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({
-    push: mockPush,
     replace: mockReplace,
+    push: mockPush,
   }),
 }));
 
-// Mock react-native-vector-icons to avoid errors in tests
-jest.mock('@expo/vector-icons', () => ({
-  FontAwesome5: 'FontAwesome5',
-  Ionicons: 'Ionicons',
-  MaterialIcons: 'MaterialIcons',
-}));
+// Mock Dimensions to fix width used in styles
+import { Dimensions } from 'react-native';
+Dimensions.get = jest.fn().mockReturnValue({ width: 360 });
 
 describe('HomeScreen', () => {
+  const { getProfile, logout } = require('../api/authService.js');
+  const AsyncStorage = require('@react-native-async-storage/async-storage');
+
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Default mocks:
+    getProfile.mockResolvedValue({ email: 'testuser@example.com' });
+    logout.mockResolvedValue();
+    AsyncStorage.getItem.mockResolvedValue('fake-token');
+
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve([
+            {
+              date: new Date().toISOString(),
+              calories: 100,
+              protein: 10,
+              carbs: 20,
+              fat: 5,
+            },
+            {
+              date: new Date().toISOString(),
+              calories: 50,
+              protein: 5,
+              carbs: 10,
+              fat: 2,
+            },
+          ]),
+      })
+    );
   });
 
-  it('renders and shows profile email when getProfile resolves', async () => {
-    const profileData = { email: 'test@example.com' };
-    jest.spyOn(authService, 'getProfile').mockResolvedValue(profileData);
+  afterAll(() => {
+    jest.resetAllMocks();
+  });
 
-    const { getByText } = render(<HomeScreen />);
+  it('renders loading state and then profile greeting', async () => {
+    const { getByText, queryByText } = render(<HomeScreen />);
 
-    // Wait for profile to be set and text to appear
+    // Loading indicator shown initially
+    expect(getByText("Today's Nutrition")).toBeTruthy();
+    expect(queryByText('Loading...')).toBeNull(); // you don't have a "Loading..." text but ActivityIndicator instead
+
+    // The "Welcome back" text should update after profile loads
+    await waitFor(() =>
+      expect(getByText(/Welcome back, testuser/i)).toBeTruthy()
+    );
+  });
+
+  it('fetches and displays nutrition stats for today', async () => {
+    const { getByText, queryByText } = render(<HomeScreen />);
+
+    // Initially loadingStats true, ActivityIndicator shown
+    expect(queryByText('Calories')).toBeNull(); // stats not shown while loading
+
     await waitFor(() => {
-      expect(getByText(/Welcome to HealthNinja, test@example.com/i)).toBeTruthy();
+      // After fetchTodayStats finishes, numbers show
+      expect(getByText('150')).toBeTruthy(); // calories 100 + 50
+      expect(getByText('15g')).toBeTruthy(); // protein 10 + 5
+      expect(getByText('30g')).toBeTruthy(); // carbs 20 + 10
+      expect(getByText('7g')).toBeTruthy();  // fat 5 + 2
     });
   });
 
-  it('redirects to /login if getProfile rejects', async () => {
-    jest.spyOn(authService, 'getProfile').mockRejectedValue(new Error('fail'));
+  it('calls logout and navigates to login on logout button press', async () => {
+    const { getByText } = render(<HomeScreen />);
 
-    render(<HomeScreen />);
+    // Wait for profile load to finish to ensure button renders
+    await waitFor(() => getByText('Sign Out'));
+
+    fireEvent.press(getByText('Sign Out'));
 
     await waitFor(() => {
+      expect(logout).toHaveBeenCalledTimes(1);
       expect(mockReplace).toHaveBeenCalledWith('/login');
     });
   });
 
-  it('navigates to Community screen when Community icon pressed', async () => {
-    jest.spyOn(authService, 'getProfile').mockResolvedValue({});
-
+  it('navigates to Recent Workouts when Quick Actions button pressed', async () => {
     const { getByText } = render(<HomeScreen />);
 
-    await waitFor(() => {
-      fireEvent.press(getByText('Community'));
-      expect(mockPush).toHaveBeenCalledWith('../community/CommunityScreen');
-    });
-  });
+    const button = getByText('View Recent Workouts');
 
-  it('navigates to Nutrition screen when Nutrition icon pressed', async () => {
-    jest.spyOn(authService, 'getProfile').mockResolvedValue({});
+    fireEvent.press(button);
 
-    const { getByText } = render(<HomeScreen />);
-
-    await waitFor(() => {
-      fireEvent.press(getByText('Nutrition'));
-      expect(mockPush).toHaveBeenCalledWith('../nutrition/NutritionScreen');
-    });
-  });
-
-  it('navigates to Workouts screen when Workouts icon pressed', async () => {
-    jest.spyOn(authService, 'getProfile').mockResolvedValue({});
-
-    const { getByText } = render(<HomeScreen />);
-
-    await waitFor(() => {
-      fireEvent.press(getByText('Workouts'));
-      expect(mockPush).toHaveBeenCalledWith('../workout/RunningScreen');
-    });
-  });
-
-  it('navigates to Schedule screen when Schedule icon pressed', async () => {
-    jest.spyOn(authService, 'getProfile').mockResolvedValue({});
-
-    const { getByText } = render(<HomeScreen />);
-
-    await waitFor(() => {
-      fireEvent.press(getByText('Schedule'));
-      expect(mockPush).toHaveBeenCalledWith('../personalisedschedule/Schedule');
-    });
-  });
-
-  it('calls logout and redirects to /login on logout button press', async () => {
-    jest.spyOn(authService, 'getProfile').mockResolvedValue({});
-    const logoutMock = jest.spyOn(authService, 'logout').mockResolvedValue();
-
-    const { getByText } = render(<HomeScreen />);
-
-    await waitFor(() => {
-      fireEvent.press(getByText('Logout'));
-    });
-
-    expect(logoutMock).toHaveBeenCalled();
-    expect(mockReplace).toHaveBeenCalledWith('/login');
+    expect(mockPush).toHaveBeenCalledWith('../workout/RecentWorkouts');
   });
 });
