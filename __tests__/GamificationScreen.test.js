@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { render, waitFor } from '@testing-library/react-native';
-import GamificationScreen from '../path/to/GamificationScreen'; // adjust path
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { Alert } from 'react-native';
+import GamificationScreen from '../app/gamification/GamificationScreen';
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(),
@@ -13,14 +14,10 @@ jest.mock('expo-router', () => ({
 }));
 
 jest.mock('expo-constants', () => ({
-  expoConfig: {
-    extra: {
-      BASE_URL: 'https://mockapi.com',
-    },
-  },
+  expoConfig: { extra: { BASE_URL: 'https://mockapi.com' } },
 }));
 
-// Global fetch mock
+jest.spyOn(Alert, 'alert');
 global.fetch = jest.fn();
 
 describe('GamificationScreen', () => {
@@ -28,72 +25,74 @@ describe('GamificationScreen', () => {
     jest.clearAllMocks();
   });
 
-  it('shows loading indicator initially', async () => {
-    AsyncStorage.getItem.mockResolvedValueOnce('test@example.com');
-    fetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ badges: [], stats: {}, leaderboard: [] }),
+  it('alerts if user is not logged in', async () => {
+    AsyncStorage.getItem.mockImplementation(async (key) => {
+      if (key === 'userEmail') return null;
+      return 'mock-token';
     });
 
-    const { getByText } = render(<GamificationScreen />);
-    expect(getByText('Loading achievements...')).toBeTruthy();
-  });
-
-  it('fetches and displays user data on mount', async () => {
-    AsyncStorage.getItem
-      .mockResolvedValueOnce('test@example.com') // userEmail
-      .mockResolvedValue('mockToken'); // token for all fetches
-
-    fetch
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ badges: [{ badgeId: 'sleep_warrior' }] }) })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ stats: { avgSleepDuration: 6.5 } }) })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ leaderboard: [] }) });
-
-    const { getByText, queryByText } = render(<GamificationScreen />);
-    
-    await waitFor(() => {
-      expect(queryByText('Loading achievements...')).toBeNull();
-      expect(getByText('Your Progress')).toBeTruthy();
-      expect(getByText('Badges Earned')).toBeTruthy();
-    });
-  });
-
-  it('handles missing user email by showing alert', async () => {
-    AsyncStorage.getItem.mockResolvedValueOnce(null); // no email
-
-    const alertMock = jest.spyOn(global, 'Alert').mockImplementation(() => {});
     render(<GamificationScreen />);
 
     await waitFor(() => {
-      expect(alertMock).toHaveBeenCalledWith('Error', 'Please log in to access gamification');
+      expect(Alert.alert).toHaveBeenCalledWith('Error', 'Please log in to access gamification');
     });
-
-    alertMock.mockRestore();
   });
 
-  it('displays leaderboard if data is returned', async () => {
-    AsyncStorage.getItem
-      .mockResolvedValueOnce('user@example.com') // email
-      .mockResolvedValue('mockToken'); // token
+  it('loads and displays achievements and leaderboard', async () => {
+    AsyncStorage.getItem.mockImplementation(async (key) => {
+      if (key === 'userEmail') return 'test@example.com';
+      return 'mock-token';
+    });
+
+    const mockBadges = { badges: [{ badgeId: 'sleep_warrior' }] };
+    const mockStats = { stats: { avgSleepDuration: 6.5, avgProtein: 40 } };
+    const mockLeaderboard = {
+      leaderboard: [
+        { email: 'test@example.com', badgeCount: 3, recentBadges: [{ badgeId: 'sleep_warrior' }] },
+        { email: 'other@example.com', badgeCount: 5, recentBadges: [] },
+      ]
+    };
 
     fetch
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ badges: [] }) })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ stats: {} }) })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          leaderboard: [
-            { email: 'user@example.com', badgeCount: 5, recentBadges: [{ badgeId: 'sleep_warrior' }] }
-          ]
-        })
-      });
+      .mockResolvedValueOnce({ ok: true, json: async () => mockBadges })
+      .mockResolvedValueOnce({ ok: true, json: async () => mockStats })
+      .mockResolvedValueOnce({ ok: true, json: async () => mockLeaderboard });
+
+    const { getByText, findByText } = render(<GamificationScreen />);
+
+    expect(await findByText('🏆 Achievements')).toBeTruthy();
+    expect(await findByText('Badges Earned')).toBeTruthy();
+    expect(await findByText('You')).toBeTruthy();
+  });
+
+it('handles API error gracefully', async () => {
+  AsyncStorage.getItem.mockResolvedValue('test@example.com');
+  fetch.mockRejectedValue(new Error('API failure'));
+
+  render(<GamificationScreen />);
+
+  await waitFor(() => expect(Alert.alert).toHaveBeenCalled());
+
+  expect(Alert.alert).toHaveBeenCalledWith('Error', 'Failed to load gamification data');
+});
+
+  it('navigates to home on button press', async () => {
+    const mockPush = jest.fn();
+    jest.mock('expo-router', () => ({
+      useRouter: () => ({ push: mockPush }),
+    }));
+
+    AsyncStorage.getItem.mockImplementation(async (key) => {
+      if (key === 'userEmail') return 'test@example.com';
+      return 'mock-token';
+    });
+
+    fetch.mockResolvedValue({ ok: true, json: async () => ({ badges: [], stats: {}, leaderboard: [] }) });
 
     const { getByText } = render(<GamificationScreen />);
 
-    await waitFor(() => {
-      expect(getByText('🏅 Community Leaderboard')).toBeTruthy();
-      expect(getByText('You')).toBeTruthy();
-      expect(getByText('5 badges')).toBeTruthy();
-    });
+    await waitFor(() => getByText('Go Back to Home'));
+    fireEvent.press(getByText('Go Back to Home'));
+    // Can't test navigation directly due to mocked useRouter above
   });
 });

@@ -160,6 +160,7 @@ const GamificationScreen = () => {
       }
     } catch (error) {
       console.error('Error loading user badges:', error);
+      throw error;
     }
   };
 
@@ -179,6 +180,7 @@ const GamificationScreen = () => {
       }
     } catch (error) {
       console.error('Error loading user stats:', error);
+      throw error;
     }
   };
 
@@ -198,6 +200,7 @@ const GamificationScreen = () => {
       }
     } catch (error) {
       console.error('Error loading leaderboard:', error);
+      throw error;
     }
   };
 

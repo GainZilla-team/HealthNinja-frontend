@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { Pedometer } from 'expo-sensors';
-import StepTrackerScreen from '../StepTrackerScreen';
+import StepTrackerScreen from '../app/steptracker/StepTrackerScreen';
 
 // Mock all the required modules
 jest.mock('expo-sensors', () => ({
