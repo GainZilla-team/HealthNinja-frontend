@@ -1,4 +1,4 @@
-// services/StepTrackerService.js
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 

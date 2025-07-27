@@ -5,6 +5,9 @@ import { Pedometer } from 'expo-sensors';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+import {
+    saveManualSteps // Add this import
+} from '../../api/stepTrackerService';
 import styles from './StepTrackerStyles';
 
 const BASE_URL = Constants.expoConfig?.extra?.BASE_URL;
