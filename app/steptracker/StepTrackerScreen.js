@@ -146,13 +146,14 @@ export default function StepTrackerScreen() {
   const fetchTodaySteps = useCallback(async () => {
     try {
         const token = await AsyncStorage.getItem('token');
-        
         const response = await fetch(`${BASE_URL}/api/steps/today`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` }
         });
-
         const result = await handleApiResponse(response);
-        const totalSteps = result.data?.reduce((sum, entry) => sum + (entry.steps || 0), 0) || 0;
+
+        // Fix: ensure result.data is array before reduce
+        const stepsArray = Array.isArray(result.data) ? result.data : [];
+        const totalSteps = stepsArray.reduce((sum, entry) => sum + (entry.steps || 0), 0);
         setTodaySteps(totalSteps);
     } catch (error) {
         console.error('Fetch today steps error:', error);
