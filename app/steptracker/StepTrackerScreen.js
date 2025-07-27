@@ -144,15 +144,9 @@ export default function StepTrackerScreen() {
     try {
         const token = await AsyncStorage.getItem('token');
         
-        // Get start and end of current day
-        const now = new Date();
-        const startOfDay = new Date(now.setHours(0, 0, 0, 0)).toISOString();
-        const endOfDay = new Date(now.setHours(23, 59, 59, 999)).toISOString();
-
-        const response = await fetch(
-        `${BASE_URL}/api/steps?startDate=${startOfDay}&endDate=${endOfDay}`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-        );
+        const response = await fetch(`${BASE_URL}/api/steps/today`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
 
         const result = await handleApiResponse(response);
         const totalSteps = result.data?.reduce((sum, entry) => sum + (entry.steps || 0), 0) || 0;
