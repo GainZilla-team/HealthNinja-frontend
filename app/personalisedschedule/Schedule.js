@@ -89,7 +89,14 @@ export default function Schedule() {
 
       // Parse workout plan text to extract day, time, title
       // Example line: "Monday 6:00 PM - Cardio Blast: 30 minutes running"
-      const regex = /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+(\d{1,2}:\d{2})\s*(AM|PM)?\s*[-–—]\s*([^\n:]+):?\s*([^\n]*)/gi;
+      const regex = /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+(\d{1,2}:\d{2})\s*(AM|PM)?\s*[-–—]\s*(.*?):\s*(.*)/gi;
+
+      const matches = [...plan.matchAll(regex)];
+      console.log('Regex matched sessions:', matches.length);
+      matches.forEach((m, i) => {
+        console.log(`Match ${i + 1}:`, m.slice(1)); // logs [day, time, AM/PM, title, description]
+      });
+      
       const dayToIndex = {
         sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
         thursday: 4, friday: 5, saturday: 6
