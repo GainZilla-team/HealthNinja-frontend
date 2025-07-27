@@ -345,6 +345,7 @@ const SleepTracker = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a28" />
       <ScrollView 
+        testID="sleep-scrollview"
         style={styles.scrollView} 
         showsVerticalScrollIndicator={false}
         refreshControl={

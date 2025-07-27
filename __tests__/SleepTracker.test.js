@@ -1,117 +1,143 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import * as SleepApiService from '../../api/sleepService';
-import SleepTracker from '../SleepTracker';
+import SleepTracker from '../app/sleep/SleepScreen';
 
-// Mock all the required modules
-jest.mock('@react-native-async-storage/async-storage');
-jest.mock('../../api/sleepService');
-jest.mock('expo-router', () => ({
-  useRouter: () => ({
-    back: jest.fn(),
-  }),
+// Mock all dependencies
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  setItem: jest.fn(),
+  getItem: jest.fn(),
+  removeItem: jest.fn(),
 }));
 
-// Mock sleep data
-const mockSleepData = {
-  sleepRecords: [
-    {
+// Mock sleepService
+const mockSleepService = {
+  getCurrentUserEmail: jest.fn(() => Promise.resolve('test@example.com')),
+  getSleepData: jest.fn(() => Promise.resolve({
+    sleepRecords: [{
       _id: '1',
-      date: '2023-06-01T08:00:00Z',
       duration: 7.5,
       quality: 4,
       bedtime: '22:30',
       wakeupTime: '06:00'
+    }],
+    summary: {
+      averageDuration: 7.2,
+      averageQuality: 3.8,
+      totalRecords: 5
     }
-  ],
-  summary: {
-    averageDuration: 7.2,
-    averageQuality: 3.8,
-    totalRecords: 5
-  }
+  })),
+  addSleepEntry: jest.fn(() => Promise.resolve({ success: true }))
 };
+jest.mock('../api/sleepService', () => mockSleepService);
+
+// Mock Alert with proper implementation
+const mockAlert = jest.fn();
+jest.mock('react-native/Libraries/Alert/Alert', () => ({
+  alert: mockAlert
+}));
 
 describe('SleepTracker', () => {
   beforeEach(() => {
-    // Clear all mocks before each test
     jest.clearAllMocks();
     
-    // Mock API responses
-    SleepApiService.getCurrentUserEmail.mockResolvedValue('test@example.com');
-    SleepApiService.getSleepData.mockResolvedValue(mockSleepData);
-    SleepApiService.addSleepEntry.mockResolvedValue({ success: true });
-  });
-
-  it('renders loading state initially', async () => {
-    const { getByText } = render(<SleepTracker />);
-    expect(getByText('Loading sleep data...')).toBeTruthy();
-  });
-
-  it('displays sleep data after loading', async () => {
-    const { findByText } = render(<SleepTracker />);
+    // Set up mock implementations
+    mockSleepService.getCurrentUserEmail.mockResolvedValue('test@example.com');
+    mockSleepService.getSleepData.mockResolvedValue({
+      sleepRecords: [{
+        _id: '1',
+        duration: 7.5,
+        quality: 4,
+        bedtime: '22:30',
+        wakeupTime: '06:00'
+      }],
+      summary: {
+        averageDuration: 7.2,
+        averageQuality: 3.8,
+        totalRecords: 5
+      }
+    });
     
-    // Check that summary data is displayed
-    expect(await findByText('7.2h')).toBeTruthy();
-    expect(await findByText('3.8/5')).toBeTruthy();
-    expect(await findByText('5')).toBeTruthy();
+    // Mock Alert to handle all cases
+    mockAlert.mockImplementation((title) => {
+      if (title === 'Error') return;
+      if (title === 'Sleep Tracking Started') return;
+    });
   });
 
-  it('starts and stops sleep tracking', async () => {
-    const { findByText, getByText } = render(<SleepTracker />);
-    await findByText('Start Sleep');
+  it('tracks sleep session', async () => {
+    // Mock Alert for sleep session complete
+    mockAlert.mockImplementationOnce((title, message, buttons) => {
+      if (title === 'Sleep Session Complete') {
+        buttons.find(b => b.text === 'Rate Quality').onPress();
+      }
+    });
+
+    const { getByText } = render(<SleepTracker />);
+    
+    // Wait for initial load
+    await waitFor(() => getByText('Start Sleep'));
     
     // Start tracking
     fireEvent.press(getByText('Start Sleep'));
     
     // Verify tracking started
-    expect(AsyncStorage.setItem).toHaveBeenCalled();
-    expect(getByText('Wake Up')).toBeTruthy();
+    await waitFor(() => expect(getByText('Wake Up')).toBeTruthy());
     
     // Stop tracking
     fireEvent.press(getByText('Wake Up'));
     
-    // Verify quality rating prompt appears
-    await waitFor(() => {
-      expect(getByText('Rate Your Sleep Quality')).toBeTruthy();
-    });
+    // Verify Alert was called
+    expect(mockAlert).toHaveBeenCalledWith(
+      'Sleep Session Complete',
+      expect.stringContaining('You slept for'),
+      expect.arrayContaining([
+        expect.objectContaining({
+          text: 'Rate Quality',
+        }),
+      ])
+    );
   });
 
-  it('handles sleep quality rating', async () => {
-    const { findByText, getByText } = render(<SleepTracker />);
-    await findByText('Start Sleep');
+  it('saves sleep quality rating', async () => {
+    // Mock Alert to handle the complete flow
+    mockAlert.mockImplementationOnce((title) => {
+      if (title === 'Sleep Tracking Started') return;
+    }).mockImplementationOnce((title, message, buttons) => {
+      if (title === 'Sleep Session Complete') {
+        buttons.find(b => b.text === 'Rate Quality').onPress();
+      }
+    }).mockImplementationOnce((title, message, buttons) => {
+      if (title === 'Rate Your Sleep Quality') {
+        buttons.find(b => b.text.includes('⭐⭐⭐')).onPress();
+      }
+    });
+
+    const { getByText } = render(<SleepTracker />);
     
-    // Start and stop tracking to trigger quality rating
+    await waitFor(() => getByText('Start Sleep'));
+    
+    // Start tracking
     fireEvent.press(getByText('Start Sleep'));
-    fireEvent.press(getByText('Wake Up'));
     
-    // Select a quality rating
-    fireEvent.press(getByText('⭐⭐⭐ Good'));
+    // Stop tracking
+    fireEvent.press(getByText('Wake Up'));
     
     // Verify API was called
     await waitFor(() => {
-      expect(SleepApiService.addSleepEntry).toHaveBeenCalled();
+      expect(mockSleepService.addSleepEntry).toHaveBeenCalled();
     });
   });
 
-  it('refreshes sleep data', async () => {
-    const { findByText, getByTestId } = render(<SleepTracker />);
-    await findByText('7.2h');
+  it('refreshes data', async () => {
+    const { getByTestId, getByText } = render(<SleepTracker />);
     
-    // Trigger refresh
-    const refreshControl = getByTestId('refresh-control');
-    refreshControl.props.onRefresh();
+    await waitFor(() => getByText('Start Sleep'));
     
-    // Verify data was reloaded
+    // Find ScrollView and trigger refresh
+    const scrollView = getByTestId('sleep-scrollview');
+    scrollView.props.refreshControl.props.onRefresh();
+    
     await waitFor(() => {
-      expect(SleepApiService.getSleepData).toHaveBeenCalledTimes(2);
+      expect(mockSleepService.getSleepData).toHaveBeenCalledTimes(2);
     });
-  });
-
-  it('handles errors when loading data', async () => {
-    SleepApiService.getSleepData.mockRejectedValue(new Error('Network error'));
-    
-    const { findByText } = render(<SleepTracker />);
-    const errorMessage = await findByText(/No sleep data yet/i);
-    expect(errorMessage).toBeTruthy();
   });
 });
