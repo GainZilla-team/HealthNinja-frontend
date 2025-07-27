@@ -1,129 +1,71 @@
-import express from 'express';
-import request from 'supertest';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import * as router from 'expo-router';
+import { fetchPosts } from '../api/postService';
+import CommunityScreen from '../app/community/CommunityScreen';
 
-// Import your route handlers (adjust paths as needed)
-import commentRoutes from '../routes/commentRoute.js';
-import postRoutes from '../routes/postRoute.js';
+jest.mock('../api/postService', () => ({
+  fetchPosts: jest.fn(),
+}));
 
-// Mock Mongoose models
-jest.mock('../models/user.model.js');
-jest.mock('../models/post.model.js');
+describe('CommunityScreen', () => {
+  const backMock = jest.fn();
 
-import Post from '../models/post.model.js';
-
-// Setup Express app for testing
-const app = express();
-app.use(express.json());
-
-// Mock authentication middleware to always pass and inject a mock user
-const authenticateUser = (req, res, next) => {
-  req.user = { _id: 'user123', email: 'testuser@example.com' };
-  next();
-};
-
-// Mount routes with mocked auth middleware
-app.use('/api/posts', authenticateUser, postRoutes);
-app.use('/api/comments', authenticateUser, commentRoutes);
-
-describe('Community Post and Comment API', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(router, 'useRouter').mockReturnValue({
+      back: backMock,
+    });
   });
 
-  test('Create a new post successfully', async () => {
-    const mockPost = {
-      _id: 'post123',
-      content: 'Hello world!',
-      email: 'testuser@example.com',
-      createdAt: new Date(),
-      comments: [],
-      save: jest.fn().mockResolvedValue(true),
-    };
-    
-    Post.mockImplementation(() => mockPost);
-    Post.prototype.save = jest.fn().mockResolvedValue(mockPost);
+  it('calls router.back when back button pressed', () => {
+    fetchPosts.mockResolvedValueOnce([]);
 
-    // Mock Post.create or new Post
-    Post.create = jest.fn().mockResolvedValue(mockPost);
-
-    // Mock Post.find for fetching posts
-    Post.find = jest.fn().mockResolvedValue([mockPost]);
-
-    // Mock Post.findById for comment routes
-    Post.findById = jest.fn().mockResolvedValue(mockPost);
-
-    // Simulate POST /api/posts
-    const res = await request(app)
-      .post('/api/posts')
-      .send({ content: 'Hello world!' })
-      .set('Authorization', 'Bearer faketoken');
-
-    expect(res.statusCode).toBe(201);
-    expect(res.body.content).toBe('Hello world!');
-    expect(res.body.email).toBe('testuser@example.com');
+    const { getByText } = render(<CommunityScreen />);
+    fireEvent.press(getByText('Back to Home'));
+    expect(backMock).toHaveBeenCalled();
   });
 
-  test('Add a comment to a post', async () => {
-    const mockPost = {
-      _id: 'post123',
-      content: 'Hello world!',
-      email: 'testuser@example.com',
-      createdAt: new Date(),
-      comments: [],
-      save: jest.fn().mockResolvedValue(true),
-      comments: {
-        push: jest.fn(),
-        length: 0,
-      }
-    };
+  it('renders header and shows loading initially', () => {
+    fetchPosts.mockReturnValue(new Promise(() => {}));
 
-    Post.findById = jest.fn().mockResolvedValue(mockPost);
-
-    const res = await request(app)
-      .post('/api/comments/post123')
-      .send({ content: 'Nice post!' })
-      .set('Authorization', 'Bearer faketoken');
-
-    expect(Post.findById).toHaveBeenCalledWith('post123');
-    expect(mockPost.comments.push).toHaveBeenCalledWith(
-      expect.objectContaining({
-        content: 'Nice post!',
-        email: 'testuser@example.com',
-      })
-    );
-    expect(res.statusCode).toBe(201);
+    const { getByText } = render(<CommunityScreen />);
+    expect(getByText('Community')).toBeTruthy();
+    expect(getByText('Share your fitness journey')).toBeTruthy();
+    expect(getByText('Loading posts...')).toBeTruthy();
   });
 
-  test('Delete a comment from a post', async () => {
-    // Setup a mock comment subdocument
-    const mockComment = {
-      _id: 'comment123',
-      content: 'Nice post!',
-      email: 'testuser@example.com',
-      remove: jest.fn(),
-    };
+  it('fetches posts and displays them', async () => {
+    const mockPosts = [
+      { _id: '1', content: 'First post', email: 'a@example.com', comments: [] },
+      { _id: '2', content: 'Second post', email: 'b@example.com', comments: [] },
+    ];
 
-    const mockPost = {
-      _id: 'post123',
-      comments: {
-        id: jest.fn(() => mockComment),
-      },
-      save: jest.fn().mockResolvedValue(true),
-    };
+    fetchPosts.mockResolvedValueOnce(mockPosts);
 
-    Post.findById = jest.fn().mockResolvedValue(mockPost);
+    const { getByText, queryByText } = render(<CommunityScreen />);
 
-    const res = await request(app)
-      .delete('/api/comments/post123/comment123')
-      .set('Authorization', 'Bearer faketoken');
+    expect(getByText('Loading posts...')).toBeTruthy();
 
-    expect(Post.findById).toHaveBeenCalledWith('post123');
-    expect(mockPost.comments.id).toHaveBeenCalledWith('comment123');
-    expect(mockComment.remove).toHaveBeenCalled();
-    expect(mockPost.save).toHaveBeenCalled();
-    expect(res.statusCode).toBe(200);
-    expect(res.body.message).toBe('Comment deleted successfully');
+    await waitFor(() => {
+      expect(queryByText('Loading posts...')).toBeNull();
+    });
+
+    expect(getByText(/Community Posts \(2\)/)).toBeTruthy();
+    expect(getByText('First post')).toBeTruthy();
+    expect(getByText('Second post')).toBeTruthy();
   });
 
-  // You can add more tests like unauthorized access, invalid input etc.
+  it('shows error message on fetch failure', async () => {
+    fetchPosts.mockRejectedValueOnce(new Error('Network error'));
+
+    const { getByText, queryByText } = render(<CommunityScreen />);
+
+    expect(getByText('Loading posts...')).toBeTruthy();
+
+    await waitFor(() => {
+      expect(queryByText('Loading posts...')).toBeNull();
+    });
+
+    expect(getByText('Failed to load posts')).toBeTruthy();
+  });
 });
