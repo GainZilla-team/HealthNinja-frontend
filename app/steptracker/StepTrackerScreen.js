@@ -159,29 +159,25 @@ export default function StepTrackerScreen() {
 
   const handleSaveManualSteps = async () => {
     try {
-        console.log('[DEBUG] Manual steps input:', manualSteps); // ADD THIS
+        console.log('[DEBUG] Attempting to save manual steps:', manualSteps);
         
         const steps = parseInt(manualSteps, 10);
-        if (isNaN(steps) || steps <= 0) {
-        console.log('[DEBUG] Invalid steps input'); // ADD THIS
-        Alert.alert('Invalid', 'Please enter a valid number');
-        return;
+        if (isNaN(steps)) {
+        throw new Error('Please enter a valid number');
         }
-        
-        console.log('[DEBUG] Calling saveSteps with', steps); // ADD THIS
-        await saveSteps(steps);
+
+        const result = await saveManualSteps(steps);
+        console.log('[DEBUG] Save successful:', result);
         
         setManualSteps('');
-        console.log('[DEBUG] Manual steps saved, fetching latest data'); // ADD THIS
-        await fetchTodaySteps();
+        await fetchTodaySteps(); // Refresh data
         
-        Alert.alert('Success', `${steps} steps added to today's total`);
+        Alert.alert('Success', `${steps} steps added successfully`);
     } catch (error) {
-        console.error('[ERROR] Manual save failed:', error); // ADD THIS
+        console.error('[ERROR] Manual save failed:', error);
         Alert.alert('Error', error.message);
     }
     };
-
   useEffect(() => {
     const initialize = async () => {
       try {

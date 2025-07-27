@@ -23,6 +23,33 @@ export const saveSteps = async (steps) => {
   }
 };
 
+export const saveManualSteps = async (steps, date) => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${BASE_URL}/api/steps/manual`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ 
+        steps: Number(steps),
+        date: date || new Date().toISOString()
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to save manual steps');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Save manual steps error:', error);
+    throw error;
+  }
+};
+
 export const fetchStepsData = async (endpoint) => {
   try {
     const token = await AsyncStorage.getItem('token');
