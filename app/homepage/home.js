@@ -255,6 +255,39 @@ export default function HomeScreen() {
           )}
         </View>
 
+        {/* Quick Actions */}
+        <View style={{
+          backgroundColor: 'white',
+          borderRadius: 20,
+          padding: 20,
+          margin: 20,
+          marginBottom: 16,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
+          elevation: 3
+        }}>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: '#1e293b', marginBottom: 12 }}>
+            Quick Actions
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.push('../workout/RecentWorkouts')}
+            style={{
+              backgroundColor: '#f59e0b',
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              borderRadius: 12,
+              alignItems: 'center',
+              flexDirection: 'row',
+              justifyContent: 'center'
+            }}
+          >
+            <MaterialIcons name="fitness-center" size={20} color="white" style={{ marginRight: 8 }} />
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>View Recent Workouts</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Health Modules Grid */}
         <Text style={{ fontSize: 20, fontWeight: '600', color: '#1e293b', marginBottom: 16, marginLeft: 20 }}>
           Health Modules
