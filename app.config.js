@@ -10,7 +10,7 @@ export default {
         projectId: "7d57a2c0-5f3b-45a6-a195-959864c010d3"
       },
       API_KEY: process.env.API_KEY,
-      BASE_URL: "https://backend-8gzc.onrender.com",
+      BASE_URL: process.env.BASE_URL,
     },
     version: "1.0.0",
     orientation: "portrait",

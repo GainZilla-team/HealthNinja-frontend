@@ -163,13 +163,11 @@ export default function StepTrackerScreen() {
 
   const handleSaveManualSteps = async () => {
     try {
-        console.log('[DEBUG] Manual steps input:', manualSteps); // ADD THIS
+        console.log('[DEBUG] Attempting to save manual steps:', manualSteps);
         
         const steps = parseInt(manualSteps, 10);
-        if (isNaN(steps) || steps <= 0) {
-        console.log('[DEBUG] Invalid steps input'); // ADD THIS
-        Alert.alert('Invalid', 'Please enter a valid number');
-        return;
+        if (isNaN(steps)) {
+        throw new Error('Please enter a valid number');
         }
 
         const result = await saveManualSteps(steps);
