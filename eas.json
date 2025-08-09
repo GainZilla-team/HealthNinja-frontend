@@ -21,8 +21,11 @@
       }
     },
     "production": {
+      "env": {
+        "BASE_URL": "https://backend-8gzc.onrender.com"
+      },
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "apk"
       }
     },
     "apk": {

@@ -14,7 +14,7 @@ export const register = async (email, password) => {
     }
     throw new Error(error.message || 'Signup failed');
   }
-};
+};p
 
 export const login = async (email, password) => {
   try {
